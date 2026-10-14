@@ -78,3 +78,16 @@ def test_benchmark_averages_repetitions_once_and_records_device():
     if not tf.config.list_physical_devices("GPU"):
         with pytest.raises(ValueError, match="GPU requested"):
             benchmark(model, batch("Enwave").spectra[:1], "translation", device="cuda", repetitions=1)
+
+
+def test_focused_graph_matches_original_weight_and_output_fixture():
+    from pathlib import Path
+
+    path = Path(__file__).parent / "fixtures/translator_reference.npz"
+    with np.load(path, allow_pickle=False) as fixture:
+        model = build_model(TranslationConfig(width=2))
+        weights = [fixture[f"weight:{i}"] for i in range(len(model.weights))]
+        model.set_weights(weights)
+        outputs = model([fixture["input"]], training=False)
+        for name, output in zip(model.output_names, outputs):
+            np.testing.assert_allclose(output.numpy(), fixture[f"output:{name}"], rtol=1e-6, atol=1e-7)

@@ -15,6 +15,7 @@ legacy/source_snapshot.zip
 *.pt
 *.h5
 *.keras
+*.npz
 !tests/fixtures/*.npz
 notebooks/.ipynb_checkpoints/
 configs/local/

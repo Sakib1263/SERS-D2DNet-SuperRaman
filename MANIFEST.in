@@ -4,11 +4,10 @@ recursive-include configs *.json
 recursive-include notebooks *.ipynb
 recursive-include tests *.py *.npz *.json
 recursive-include examples *.py *.md
-recursive-include tools *.py *.txt
+recursive-include tools *.py
 recursive-include .github *.yml
+include docs/NOTEBOOK_GUIDE.md docs/SECOND_PASS_REVIEW.md docs/paper_contract.json
 include docs/PAPER_IMPLEMENTATION_MAP.md docs/DATA.md docs/REPRODUCIBILITY.md docs/MODEL_CARDS.md docs/BENCHMARKS.md docs/IMPLEMENTATION_STATUS.md docs/VERIFICATION.json
-include legacy/README.md
-include experiments/README.md
 global-exclude *.pyc
 prune configs/local
 prune docs/audit

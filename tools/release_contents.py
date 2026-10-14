@@ -26,6 +26,9 @@ DOCS = (
     "BENCHMARKS.md",
     "IMPLEMENTATION_STATUS.md",
     "VERIFICATION.json",
+    "NOTEBOOK_GUIDE.md",
+    "SECOND_PASS_REVIEW.md",
+    "paper_contract.json",
 )
 
 
@@ -42,9 +45,7 @@ def public_files():
         "notebooks": (".ipynb",),
         "tools": (".py", ".txt"),
         "examples": (".py", ".md"),
-        "experiments": (".md",),
         ".github": (".yml",),
-        "legacy": (".md",),
     }.items():
         for p in (ROOT / folder).rglob("*"):
             if p.is_file() and p.suffix in suffixes and "local" not in p.relative_to(ROOT).parts:
@@ -61,7 +62,7 @@ def main():
     version = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"]
     dist = ROOT / "dist"
     dist.mkdir(exist_ok=True)
-    prefix = f"SERSD2D-SuperRaman-{version}"
+    prefix = f"SERS-D2DNet-SuperRaman-{version}"
     archive = dist / f"{prefix}-github-source.zip"
     paths = public_files()
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as z:

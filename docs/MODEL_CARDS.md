@@ -2,7 +2,7 @@
 
 ## SERS-D2DNet supplied graph
 
-Task: portable-device spectra to the Renishaw domain. TensorFlow input `[N,1400,1]`, nominal preprocessed [0,1] intensity. Default graph: `MLMRSNet.IMUNet`, depth 3, base width 128, mixed pooling, deep supervision, original source hash recorded. Measured total parameters: 61,511,562. Output selected by name `out`; auxiliary heads have lengths 700, 350, and 175. The final output is linear and not clipped automatically.
+Task: portable-device spectra to the Renishaw domain. TensorFlow input `[N,1400,1]`, nominal preprocessed [0,1] intensity. Default graph: focused extraction of `MLMRSNet.IMUNet`, depth 3, base width 128, mixed pooling, deep supervision, original source hash recorded. Measured total parameters: 61,511,562. Output selected by name `out`; auxiliary heads have lengths 700, 350, and 175. The final output is linear and not clipped automatically.
 
 Fit: independent same-analyte pseudo-pairs with weighted MAE. Selection: full-resolution validation MAE. Coverage: the known 20-label registry, with separately trained device-specific models. Physical pairs, unseen-device performance, unseen-analyte generalization, and clinical diagnostic efficacy are not established by this release.
 
@@ -24,4 +24,4 @@ Fit: cross-entropy on logits, reusable classifier trained on Renishaw. Selection
 
 A complete bundle contains four translators and one reusable classifier with hashes and class mapping identities. A partial bundle declares supported devices. The runner preserves source sample order, retains translations, and saves both original and translated classifier outputs. No sample labels are needed at inference. Renishaw bypasses translation.
 
-The demonstration bundle is trained on synthetic data for one epoch with a narrow translator. Its accuracy has no biological meaning. A research bundle needs authorized data, independent evaluation, and checkpoint-specific provenance. No pretrained scientific bundle is distributed in 0.1.0.
+The demonstration bundle is trained on synthetic data for one epoch with a narrow translator. Its accuracy has no biological meaning. A research bundle needs authorized data, independent evaluation, and checkpoint-specific provenance. No pretrained scientific bundle is distributed in 0.2.0.

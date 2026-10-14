@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sersd2d-superraman"
-version = "0.1.0"
+version = "0.2.0"
 description = "Standalone SERS-D2DNet translation and SuperRaman analyte classification"
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
@@ -14,11 +14,18 @@ license-files = ["LICENSE", "NOTICE.md"]
 authors = [{name = "Sakib Mahmud"}]
 classifiers = ["Development Status :: 4 - Beta", "Intended Audience :: Science/Research", "Programming Language :: Python :: 3"]
 
+[project.urls]
+Repository = "https://github.com/Sakib1263/SERS-D2DNet-SuperRaman"
+Documentation = "https://github.com/Sakib1263/SERS-D2DNet-SuperRaman#readme"
+Issues = "https://github.com/Sakib1263/SERS-D2DNet-SuperRaman/issues"
+
 [project.optional-dependencies]
 translation = ["tensorflow==2.21.0"]
 classification = ["torch>=2.6,<3"]
 all = ["tensorflow==2.21.0", "torch>=2.6,<3"]
 xai = ["torch>=2.6,<3", "matplotlib>=3.8,<4"]
+notebooks = ["tensorflow==2.21.0", "torch>=2.6,<3", "matplotlib>=3.8,<4", "jupyterlab>=4,<5", "ipykernel>=6", "nbformat>=5.10", "nbclient>=0.10", "nbconvert>=7"]
+
 dev = ["pytest>=8,<10", "build>=1.2", "twine>=6", "nbformat>=5.10", "nbclient>=0.10", "nbconvert>=7", "ipykernel>=6", "ruff>=0.9"]
 
 [project.scripts]
@@ -34,7 +41,7 @@ markers = ["tensorflow: constructs TensorFlow models", "torch: requires PyTorch"
 
 [tool.ruff]
 line-length = 110
-extend-exclude = ["src/sersd2d_superraman/translation/_legacy_mlmrsnet.py"]
+extend-exclude = ["src/sersd2d_superraman/translation/architecture.py"]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F"]

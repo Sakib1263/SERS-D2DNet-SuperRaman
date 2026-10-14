@@ -10,6 +10,13 @@ def classification_metrics(labels, logits):
     if y.ndim != 1 or scores.shape != (len(y), 20) or len(y) == 0:
         raise ValueError("Expected [N] labels and [N,20] logits")
     if (
+        not np.issubdtype(y.dtype, np.number)
+        or not np.issubdtype(scores.dtype, np.number)
+        or np.iscomplexobj(y)
+        or np.iscomplexobj(scores)
+    ):
+        raise ValueError("Labels and logits must be real numeric values")
+    if (
         not np.isfinite(scores).all()
         or not np.isfinite(y).all()
         or np.any(y != np.floor(y))
@@ -78,12 +85,22 @@ def _agreement(estimate, target):
 
 
 def translation_metrics(source, translated, reference):
+    source.validate()
+    reference.validate()
+    if source.source_device == "Renishaw":
+        raise ValueError("Translation evaluation requires a portable source")
     if reference.source_device != "Renishaw":
         raise ValueError("Translation evaluation requires a Renishaw reference")
+    if (
+        source.axis_cm1 is not None
+        and reference.axis_cm1 is not None
+        and not np.array_equal(source.axis_cm1, reference.axis_cm1)
+    ):
+        raise ValueError("Source and reference Raman axes differ; resampling must be explicit")
     if source.labels is None or reference.labels is None:
         raise ValueError("Class-mean evaluation requires source and reference labels")
     a = np.asarray(translated)
-    if a.shape != source.spectra.shape or not np.isfinite(a).all():
+    if a.shape != source.spectra.shape or np.iscomplexobj(a) or not np.isfinite(a).all():
         raise ValueError("Translated spectra must match source rows and be finite")
     rows = []
     for c in sorted(set(source.labels)):

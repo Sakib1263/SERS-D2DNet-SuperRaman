@@ -1,23 +1,21 @@
 # Implementation and release status
 
-14 October 2026, version 0.1.0 research beta. The standalone primary software pipeline is prepared. Full paper-result reproduction and scientific training remain pending. This distinction applies to every checkpoint/bundle and the public README.
+15 October 2026 · Version 0.2.0 research beta. The comprehensive engineering second pass is complete. Exact agreement with the paper and reproduction of its published results remain unresolved.
 
-## Completed
+## Completed and checked
 
-- Original source discovery in both author-provided SERS-Bacterial experiment folders. The original translator matches the supplied source hash. Its actual graph has 61,511,562 parameters, 231 layers, and the four registered outputs. The primary classifier has 448,572 parameters.
-- Installable package with independent backend imports, fixed 20-class registry, explicit preprocessing, pickle-free data exchange, portable configuration, and no required PRISM checkout.
-- Independent class-balanced split preparation with duplicate/acquisition groups held intact. All 29,545 real spectra have been prepared locally, keeping research data outside the public payload.
-- Standalone translation and classifier trainers, validation-only checkpoint selection, recorded configuration/data hashes, full-resolution output selection, portable weight metadata, and legacy classifier conversion with output parity checks.
-- Portable partial/complete bundle handling, separate backend worker processes, original/translated comparison, six explicitly defined translation metrics, classifier metrics/confusion matrices, optional saliency/SmoothGrad, and synchronized repeated benchmarking.
-- 28 contract tests covering invalid inputs, grouping/overlap, deterministic pseudo-pairs, metric calculations, source parameter/output contracts, forward/backward behavior, checkpoint/batch parity, artifact hashes, overwrite prevention, historical-config rejection, and benchmark averaging/device handling.
-- Synthetic classifier forward/input-gradient fixture generated from the original class. A synthetic original-object conversion produced identical logits. PyTorch CUDA forward/backward and CPU/CUDA output parity passed on the RTX 3080 Ti Laptop GPU; TensorFlow model tests ran on CPU.
-- A complete one-epoch synthetic training-to-bundle-to-inference run succeeded. Its translator width is 2; it is a software demonstration. All five notebooks executed, including the actual synthetic cascade, and the saliency plot was visually checked.
-- Default width-128 translator inference and classifier input compatibility checked for one real held-out row from each of the 20 analytes on all four portable devices. These initialized/synthetic-trained models establish input compatibility, not efficacy.
-- Original supplied files remain unchanged; a local recovery snapshot is retained. The public package excludes legacy clutter, private research data/results, local environment files, and absolute workspace paths.
+- Notebook control center plus five focused stage notebooks, sharing one persistent configuration/run and retaining verified synthetic outputs.
+- All-four-device synthetic workflow: four independent translators, one Renishaw classifier, portable bundle, and before/after comparisons on 20 held-out rows per device.
+- 48 passing contract/regression tests, no failures/errors/skips; static checks pass. The suite includes original classifier forward/input-gradient parity and a public synthetic original-translator weight/output fixture.
+- Cleaned translator matches the original on every output head with zero numerical error on the comparison batch. Default graph remains 61,511,562 parameters; classifier remains 448,572.
+- All 29,545 prepared real spectra validated against sealed source content and split manifests. Label coverage, acquisition/duplicate isolation, axes/groups, and sample identities are checked.
+- PyTorch CUDA forward/backward and CPU/CUDA logits comparison pass. TensorFlow reports no visible GPU and runs on CPU; backend device controls are separate.
+- Professional README, notebook operating guide, structured paper contract, reproducibility/model/benchmark documents, and updated release/citation metadata.
+- Obsolete trees, audit scripts, inactive model builders, previous artifacts, and the old wheel-testing environment moved outside the checkout. All 145 supplied files remain unchanged and recoverable.
 
-Machine-readable evidence is in [VERIFICATION.json](VERIFICATION.json). Detailed local audit data and temporary previews remain in excluded directories. GitHub Actions is configured, but has not run remotely.
+Current evidence is in [VERIFICATION.json](VERIFICATION.json); implementation findings are in [SECOND_PASS_REVIEW.md](SECOND_PASS_REVIEW.md). Source ZIP, wheel, source distribution, and hashes are built locally. GitHub Actions is configured; remote CI success and publication are not implied.
 
-## Prepared real-data splits
+## Prepared real-data roles
 
 | Device | Fit | Validation | Test | Total |
 |---|---:|---:|---:|---:|
@@ -27,18 +25,12 @@ Machine-readable evidence is in [VERIFICATION.json](VERIFICATION.json). Detailed
 | Fdefender | 1196 | 162 | 334 | 1692 |
 | RID | 8473 | 1199 | 2408 | 12080 |
 
-These are a new maintained protocol, not the historical paper splits. Each role contains all 20 classes and has no same-device identity/float32-duplicate overlap. No biological independence claim is made without acquisition group metadata. Public releases do not include these research arrays; `prepare` recreates them from authorized input data.
+These are maintained independent roles, not the historical paper protocol. Biological independence cannot be established without specimen/acquisition metadata. Research arrays remain local and excluded from Git/releases.
 
-## Remaining scientific work
+## Paper alignment and scientific work
 
-The original trained translator/classifier weights are absent from the inspected original folders. They are needed to verify which settings produced the published tables and saliency plots. The paper/source differences remain documented: 6.15 M versus 61.5 M translator parameters, classifier loss/schedule, mixed pooling/interpolation, validation/test reuse, R2 conventions, shift behavior, and reported file/timing sizes.
+The paper/source differences include translator parameter count, mixed pooling, interpolation, classifier objective/shifts, training/selection roles, actual fit counts, metric conventions, and deployment size/timing. They are explicitly mapped in [PAPER_IMPLEMENTATION_MAP.md](PAPER_IMPLEMENTATION_MAP.md) and [paper_contract.json](paper_contract.json).
 
-Full maintained research training and independent evaluation must be run before announcing new scientific performance. The provided default training commands use the real prepared splits and produce new run identities; they do not recreate historical optimizer/RNG state. Original raw preprocessing and the precise Raman grid remain unresolved, so raw instrument ingestion is not offered.
+No paper-trained checkpoint was found in the supplied original experiment folders. Full research fitting and independent evaluation must precede new performance claims. Raw polynomial-baseline parameters, smoothing/resampling boundaries, and the precise Raman grid still require recovery. Optional baselines, chemistry holdouts, SHAP, operator substitutions, cross-framework conversion, and joint training remain separately scoped studies.
 
-Optional paper baselines, LOCO/LOFO chemistry studies, SHAP, new operator/library substitution, cross-framework conversion, and joint training remain separately scoped experiments. The first release contains the primary translation/classification workflow, as recommended in the plan.
-
-## Environment and publication limits
-
-The original WSL research environment was retained. A separate `.venv_verify` inherits its framework packages, with build tools and this package installed only into that verification environment. TensorFlow CUDA libraries were unavailable there; no GPU library or framework upgrade was performed. Keras/NumPy emitted known array-copy deprecation warnings during weight saving; the numerical and checkpoint checks passed.
-
-Release source ZIP, wheel, source distribution, and checksums are prepared locally. No GitHub repository, remote push, release publication, or package-index publication has been performed.
+Keras/NumPy emits nonfatal array-copy deprecation warnings during weight saving. Numerical parity, gradients, serialization, and integration checks pass. The original WSL environment is preserved; installation/build checks use separate project environments. Current work has not been committed or pushed.

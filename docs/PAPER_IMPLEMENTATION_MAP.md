@@ -1,6 +1,6 @@
 # Paper, recovered sources, and maintained implementation
 
-The primary original source is `RAMAN_Task_V2.ipynb` in the author-provided segmentation experiment. Its model-building cells select `MLMRSNet.IMUNet`, depth 3, width 128, length 1400, mixed pooling, and deep supervision. The original `MLMRSNet.py` matches the supplied copy byte for byte. A CPU graph construction measured 61,511,562 parameters, 231 layers, and outputs level1 `[N,700,1]`, level2 `[N,350,1]`, level3 `[N,175,1]`, and out `[N,1400,1]`.
+The primary original source is `RAMAN_Task_V2.ipynb` in the author-provided segmentation experiment. Its model-building cells select `MLMRSNet.IMUNet`, depth 3, width 128, length 1400, mixed pooling, and deep supervision. The original `MLMRSNet.py` matched the supplied copy byte for byte during discovery. A CPU graph construction measured 61,511,562 parameters, 231 layers, and outputs level1 `[N,700,1]`, level2 `[N,350,1]`, level3 `[N,175,1]`, and out `[N,1400,1]`.
 
 | Item | Paper | Recovered original code | Maintained behavior |
 |---|---|---|---|
@@ -29,4 +29,14 @@ No trained research weights were found in either author-provided original experi
 
 The release accepts already preprocessed inputs. The original notebooks load baseline-corrected, smoothed, normalized arrays and do not recover the original polynomial baseline algorithm or exact 1400-point Raman axis. Raw ingestion remains deferred rather than guessing these settings.
 
-See `configs/legacy/observed_experiment.json` for non-executable historical settings and `configs/maintained/` for the actual maintained defaults. Corrected selection, metric definitions, and optional shift behavior require fresh experiments. The software never stamps a checkpoint as a certified paper reproduction.
+The obsolete historical configuration is retained in external recovery storage. `configs/maintained/` defines the current model/trainer defaults, and `configs/workflow_research.json` combines them for the notebook frontend.
+
+## Second-pass alignment decision
+
+Section 3.6 states 50 selected translation samples/class, 10% held out from that selection for validation, evaluation against the entire target domain, and classifier training on all Renishaw spectra. The maintained 70/10/20 protocol differs intentionally to reserve independent test data. A small class with only 50 total rows cannot supply 50 fit examples while also reserving validation and test rows. Actual fit counts and a `paper_50_pairs_per_class_achieved` field expose this difference.
+
+The paper specifies a nominal 400-1800 cm^-1 crop, polynomial baseline correction, and three-bin smoothing. The exact baseline parameters, smoothing boundaries, and 1400-bin endpoint/resampling convention remain unavailable. No raw preprocessing or physical grid is invented.
+
+The active graph is now a focused extraction in `translation/architecture.py`: the unused MLMRSNet, MLMRSNetV2, and LDNet builders were removed. The original source hash remains provenance, and the focused implementation has a separate hash. Its active operations and weight contract are retained and tested. The notebook control center exposes the complete primary workflow; it does not certify exact published-result parity.
+
+The [machine-readable paper contract](paper_contract.json) enumerates confirmed alignment, known differences, and unverified performance claims. Corrected selection, metric definitions, and optional shift behavior require fresh experiments. The software never stamps a checkpoint as a certified paper reproduction.

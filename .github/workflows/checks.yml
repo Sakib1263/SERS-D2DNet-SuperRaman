@@ -26,7 +26,7 @@ jobs:
           from sersd2d_superraman.data import SpectrumBatch
           assert 'tensorflow' not in sys.modules and 'torch' not in sys.modules
           PY
-      - run: python -m pytest -q tests/test_contracts.py
+      - run: python -m pytest -q tests/test_contracts.py tests/test_second_pass.py
   models:
     runs-on: ubuntu-latest
     steps:
@@ -35,10 +35,11 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
-      - run: python -m pip install '.[all,dev]'
+      - run: python -m pip install '.[notebooks,dev]'
       - run: python -m ruff check src tests tools
       - run: python -m pytest -q
       - run: python -m sersd2d_superraman demo --output output/ci_demo
+      - run: python tools/validate_notebooks.py
       - run: python -m build
       - run: python -m twine check --strict dist/*
       - run: python tools/release_contents.py

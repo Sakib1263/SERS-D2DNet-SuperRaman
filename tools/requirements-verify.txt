@@ -1,3 +1,0 @@
-setuptools>=77,<83
-build>=1.2
-twine>=6

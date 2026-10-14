@@ -13,7 +13,7 @@ from torch import nn
 from torch.nn import functional as F
 from ..data.registry import registry_hash
 from ..preprocessing import CLASSIFIER_TRANSFORM, classifier_input
-from ..provenance import file_hash, read_json, runtime, write_json
+from ..provenance import file_hash, runtime, write_json
 
 
 @dataclass(frozen=True)
@@ -145,7 +145,9 @@ def save_checkpoint(directory, model, training=None):
 
 def load_checkpoint(directory, device="cpu"):
     directory = Path(directory)
-    metadata = read_json(directory / "metadata.json")
+    from ..artifacts import checkpoint_metadata
+
+    metadata = checkpoint_metadata(directory)
     config = ClassifierConfig(**metadata["config"]).validate()
     if metadata.get("kind") != "classification" or metadata.get("schema_version") != 1:
         raise ValueError("Not a supported classifier checkpoint")
@@ -162,5 +164,7 @@ def load_checkpoint(directory, device="cpu"):
     if file_hash(weights) != metadata["weights_sha256"]:
         raise ValueError("Classifier checkpoint hash mismatch")
     model = SuperRaman(config)
+    if sum(p.numel() for p in model.parameters()) != metadata["parameters"]:
+        raise ValueError("Classifier parameter metadata mismatch")
     model.load_state_dict(torch.load(weights, weights_only=True, map_location="cpu"), strict=True)
     return model.to(device).eval(), metadata

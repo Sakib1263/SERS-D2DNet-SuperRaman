@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "mode": "research",
+  "run_directory": "output/research/run_001",
+  "sources": [
+    "Enwave",
+    "Tec5",
+    "Fdefender",
+    "RID"
+  ],
+  "classifier_device": "cpu",
+  "translation_device": "cpu",
+  "classifier_config": {
+    "model": {
+      "filters": 16,
+      "q": 3,
+      "max_shift": 2.0,
+      "shift_mode": "legacy_fractional"
+    },
+    "training": {
+      "epochs": 500,
+      "batch_size": 16,
+      "learning_rate": 3e-05,
+      "weight_decay": 0.0001,
+      "early_stopping_patience": 50,
+      "plateau_patience": 25,
+      "lr_factor": 0.1,
+      "seed": 37
+    }
+  },
+  "translation_config": {
+    "model": {
+      "depth": 3,
+      "width": 128
+    },
+    "training": {
+      "epochs": 300,
+      "batch_size": 16,
+      "learning_rate": 0.0005,
+      "early_stopping_patience": 30,
+      "plateau_patience": 15,
+      "lr_factor": 0.1,
+      "minimum_learning_rate": 1e-07,
+      "samples_per_class": 50,
+      "seed": 37
+    }
+  },
+  "prepared_data": "data/prepared"
+}

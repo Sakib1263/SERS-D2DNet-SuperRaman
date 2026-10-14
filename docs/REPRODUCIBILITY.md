@@ -1,6 +1,6 @@
 # Reproducibility and checkpoint migration
 
-Every maintained run starts in a new output directory. Configuration, input array/label/sample-ID hashes, pairing manifests, seeds, selected epoch, selection direction, backend versions, and weights hashes are stored. Test spectra do not enter selection. The code does not claim exact continuation of a historical optimizer or random-number state.
+Every maintained run starts in a new output directory. Configuration, input array/label/sample-ID/axis/acquisition-group hashes, pairing manifests, seeds, selected epoch, selection direction, backend versions, and weights hashes are stored. Test spectra do not enter selection. The code does not claim exact continuation of a historical optimizer or random-number state.
 
 The root package and data commands do not import TensorFlow or PyTorch. Each backend loads only for its own operation. `predict` uses separate Python worker processes for translation and classification, transferring data through NPZ. Set up both dependencies in the runner's environment; a classifier-only environment can use `classify` directly.
 
@@ -43,3 +43,11 @@ python -m venv --system-site-packages .venv_verify
 On Windows, the corresponding virtual-environment executable is `.venv_verify/Scripts/python.exe`. The verified local environment for this work is WSL/Python 3.13.14.
 
 The exact local evidence and remaining reproduction work are summarized in [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md). The original notebooks' validation/test reuse, training schedule differences, metrics, and parameter-count discrepancy are historical findings, not erased by the new implementation.
+
+## Notebook run state
+
+The shared `Workflow` controller records immutable configuration snapshots, per-stage input signatures, output hashes, running/completed/failed states, and software version. It verifies the prepared split manifests and reconstructs original spectral row order before comparing source content hashes. Reopening a completed stage reuses verified artifacts; failed or changed stages require a new run. This is not optimizer resume. All six notebooks share this control surface.
+
+## Compatibility in version 0.2
+
+Canonical batches and compatible model weight states remain readable. Batch identities now bind Raman axes and acquisition groups as well as spectra, IDs, and labels. Older prediction artifacts without those bindings should be regenerated before evaluation. Workflow artifact reuse checks the software version and configuration/input signatures; it is not optimizer continuation. The public synthetic translator fixture checks the focused graph against the preserved original without requiring obsolete source trees.

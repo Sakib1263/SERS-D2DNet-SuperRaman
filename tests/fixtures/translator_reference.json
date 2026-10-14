@@ -1,0 +1,15 @@
+{
+  "input_seed": 71,
+  "maximum_output_error_against_focused_graph": 0.0,
+  "output_names": [
+    "level1",
+    "level2",
+    "level3",
+    "out"
+  ],
+  "parameters": 15876,
+  "scope": "synthetic original-graph weights/output contract; not trained paper weights",
+  "seed": 37,
+  "source_sha256": "9026c64849b1d27f171d69121684c00a3515eed2e8c175cca4d9d9bb94a19878",
+  "width": 2
+}

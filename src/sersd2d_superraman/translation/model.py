@@ -1,8 +1,12 @@
+"""Focused recovered graph, named output inference, and portable weight contracts."""
+
 from dataclasses import asdict, dataclass
 from pathlib import Path
 import numpy as np
-from ..provenance import file_hash, read_json, runtime, write_json
+from ..provenance import file_hash, runtime, write_json
 from ..data.registry import registry_hash
+
+IMPLEMENTATION_SHA256 = "aac5cda48b1e9130e89d3e3ee05099b2941a4ba6eb8d8068ec76da5f9316b5ae"
 
 SOURCE_SHA256 = "9026c64849b1d27f171d69121684c00a3515eed2e8c175cca4d9d9bb94a19878"
 
@@ -26,12 +30,12 @@ class TranslationConfig:
 
 def build_model(config=None, seed=37):
     import tensorflow as tf
-    from ._legacy_mlmrsnet import MLMRSNet
+    from .architecture import MLMRSNet
 
     config = (config or TranslationConfig()).validate()
     tf.keras.mixed_precision.set_global_policy("float32")
-    source = Path(__file__).with_name("_legacy_mlmrsnet.py")
-    if file_hash(source) != SOURCE_SHA256:
+    source = Path(__file__).with_name("architecture.py")
+    if file_hash(source) != IMPLEMENTATION_SHA256:
         raise ValueError("Preserved translator source changed; reconcile its architecture identity first")
     for gpu in tf.config.list_physical_devices("GPU"):
         try:
@@ -93,6 +97,7 @@ def save_checkpoint(directory, model, config, source_device, training=None):
         "architecture_id": config.architecture_id,
         "config": asdict(config),
         "source_sha256": SOURCE_SHA256,
+        "implementation_sha256": IMPLEMENTATION_SHA256,
         "source_device": source_device,
         "target_device": "Renishaw",
         "input_layout": "N,L,1",
@@ -115,7 +120,9 @@ def save_checkpoint(directory, model, config, source_device, training=None):
 
 def load_checkpoint(directory):
     directory = Path(directory)
-    metadata = read_json(directory / "metadata.json")
+    from ..artifacts import checkpoint_metadata
+
+    metadata = checkpoint_metadata(directory)
     config = TranslationConfig(**metadata["config"]).validate()
     if metadata.get("kind") != "translation" or metadata.get("schema_version") != 1:
         raise ValueError("Not a supported translation checkpoint")
@@ -132,5 +139,7 @@ def load_checkpoint(directory):
     if file_hash(weights) != metadata["weights_sha256"]:
         raise ValueError("Translator checkpoint hash mismatch")
     model = build_model(config)
+    if model.count_params() != metadata["parameters"] or model.output_names != metadata.get("output_names"):
+        raise ValueError("Translator parameter/output metadata mismatch")
     model.load_weights(weights)
     return model, config, metadata

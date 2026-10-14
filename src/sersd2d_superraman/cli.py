@@ -10,6 +10,7 @@ from .data import SpectrumBatch, load_batch, save_batch, load_device, DEVICES, S
 from .data.registry import canonical_device
 from .data.splits import independent_split, assert_disjoint
 from .provenance import fresh_directory, file_hash, read_json, write_json
+from .devices import tensorflow_device
 
 
 def synthetic(output, per_class=8, seed=37):
@@ -84,9 +85,12 @@ def _config(path):
 
 
 def _parts(directory, device):
-    return tuple(
+    batches = tuple(
         load_batch(Path(directory) / device / f"{name}.npz") for name in ("train", "validation", "test")
     )
+    if any(b.source_device != device for b in batches):
+        raise ValueError("Prepared split device does not match its directory")
+    return batches
 
 
 def _run(args):
@@ -145,24 +149,28 @@ def _run(args):
         rt, rv, rx = _parts(args.data, "Renishaw")
         assert_disjoint(st, sv, sx)
         assert_disjoint(rt, rv, rx)
-        _, report = train_translation(
-            st,
-            rt,
-            sv,
-            rv,
-            args.output,
-            TranslationConfig(**architecture),
-            TranslationTrainingConfig(**parameters),
-        )
+        with tensorflow_device(args.device):
+            _, report = train_translation(
+                st,
+                rt,
+                sv,
+                rv,
+                args.output,
+                TranslationConfig(**architecture),
+                TranslationTrainingConfig(**parameters),
+            )
         return report
     if args.command == "translate":
         from .translation.model import load_checkpoint, primary_output
 
         batch = load_batch(args.input)
-        model, _, meta = load_checkpoint(args.checkpoint)
-        if meta["source_device"] != batch.source_device:
-            raise ValueError("Translator checkpoint is for a different source device")
-        result = primary_output(model, batch.spectra, args.batch_size)
+        if batch.metadata.get("translation") is not None:
+            raise ValueError("Input is already translated; classify it directly instead of translating twice")
+        with tensorflow_device(args.device):
+            model, _, meta = load_checkpoint(args.checkpoint)
+            if meta["source_device"] != batch.source_device:
+                raise ValueError("Translator checkpoint is for a different source device")
+            result = primary_output(model, batch.spectra, args.batch_size)
         out = SpectrumBatch(
             result,
             batch.source_device,
@@ -174,6 +182,8 @@ def _run(args):
                 **batch.metadata,
                 "translation": {
                     "checkpoint_sha256": meta["weights_sha256"],
+                    "source_device": batch.source_device,
+                    "target_device": "Renishaw",
                     "output_head": "out",
                     "output_range_policy": "linear_unclipped",
                     "input_file_sha256": file_hash(args.input),
@@ -226,6 +236,14 @@ def _run(args):
         with np.load(args.predictions, allow_pickle=False) as values:
             if not np.array_equal(values["sample_ids"], batch.sample_ids):
                 raise ValueError("Prediction IDs do not match the ground-truth batch")
+            metadata = json.loads(str(values["metadata_json"].item()))
+            from .data.registry import registry_hash
+
+            if (
+                metadata.get("class_registry_sha256") != registry_hash()
+                or metadata.get("input") != batch.identity()
+            ):
+                raise ValueError("Predictions belong to a different input or class registry")
             report = classification_metrics(batch.labels, values["logits"])
         write_json(args.output, report)
         return {k: report[k] for k in ("accuracy", "weighted_f1", "samples")}
@@ -260,7 +278,9 @@ def _run(args):
     if args.command == "predict":
         from .pipeline import run_pipeline
 
-        return run_pipeline(args.bundle, args.input, args.output, args.batch_size, args.device)
+        return run_pipeline(
+            args.bundle, args.input, args.output, args.batch_size, args.device, args.translation_device
+        )
     if args.command == "convert-classifier":
         from .classification.model import ClassifierConfig
         from .classification.conversion import convert_legacy
@@ -459,7 +479,16 @@ def parser():
             s.add_argument("--epochs", type=int)
         if name in ("make-synthetic", "prepare", "explain"):
             s.add_argument("--seed", type=int, default=37)
-        if name in ("classify", "predict", "explain", "benchmark", "audit-model", "train-classifier"):
+        if name in (
+            "translate",
+            "train-translation",
+            "classify",
+            "predict",
+            "explain",
+            "benchmark",
+            "audit-model",
+            "train-classifier",
+        ):
             s.add_argument("--device", default="cpu")
         if name in ("translate", "classify", "predict", "benchmark"):
             s.add_argument("--batch-size", type=int, default=16)
@@ -487,6 +516,7 @@ def parser():
             s.add_argument("--allow-untrained", action="store_true")
         if name == "predict":
             s.add_argument("--bundle", required=True)
+            s.add_argument("--translation-device", choices=("cpu", "cuda"), default="cpu")
         if name == "convert-classifier":
             s.add_argument("--legacy-source")
             s.add_argument("--parity-input", required=True)
@@ -507,7 +537,7 @@ def main(argv=None):
     args = parser().parse_args(argv)
     try:
         result = _run(args)
-    except (ValueError, OSError, ModuleNotFoundError) as error:
+    except (ValueError, TypeError, OSError, ModuleNotFoundError, RuntimeError) as error:
         raise SystemExit(f"{type(error).__name__}: {error}") from error
     # Reports retain details in their files; stdout remains bounded.
     payload = json.dumps(result, indent=2, allow_nan=False)

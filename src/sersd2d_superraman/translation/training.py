@@ -34,6 +34,8 @@ class TranslationTrainingConfig:
             raise ValueError("Invalid translation optimizer settings")
         if not 0 <= self.minimum_learning_rate <= self.learning_rate:
             raise ValueError("minimum_learning_rate must lie between zero and learning_rate")
+        if type(self.seed) is not int or self.seed < 0:
+            raise ValueError("seed must be a nonnegative integer")
         return self
 
 
@@ -65,6 +67,11 @@ def train_translation(
     assert_disjoint(reference_train, reference_validation)
     assert_disjoint(source_train, reference_validation)
     assert_disjoint(reference_train, source_validation)
+    if any(
+        b.labels is None or set(b.labels) != set(range(20))
+        for b in (source_train, reference_train, source_validation, reference_validation)
+    ):
+        raise ValueError("Translation fitting and validation require all 20 labeled classes")
     if source_train.source_device != source_validation.source_device:
         raise ValueError("Source train/validation devices differ")
     config = (training_config or TranslationTrainingConfig()).validate()
@@ -87,12 +94,17 @@ def train_translation(
     write_json(output / "pseudo_pairs.json", {"fit": fit_manifest, "validation": val_manifest})
     provenance = {
         "status": "trained",
+        "synthetic": bool(source_train.metadata.get("synthetic", False)),
+        "protocol": "maintained_independent_validation",
         "objective": "weighted_MAE_deep_supervision",
         "head_weights": weights,
         "config": asdict(config),
         "selection": "validation_out_mae",
         "selection_direction": "min",
         "pairing": "class_matched_physically_unpaired",
+        "fit_class_counts": {str(c): int(np.sum(fit_x.labels == c)) for c in range(20)},
+        "requested_maximum_pairs_per_class": config.samples_per_class,
+        "paper_50_pairs_per_class_achieved": all(np.sum(fit_x.labels == c) == 50 for c in range(20)),
         "fit_pair_manifest_sha256": fit_manifest["sha256"],
         "validation_pair_manifest_sha256": val_manifest["sha256"],
         "test_used_for_selection": False,
@@ -121,6 +133,8 @@ def train_translation(
             loss_sum += loss * len(rows)
         predictions = primary_output(model, val_x.spectra, config.batch_size)
         score = float(np.abs(predictions - val_y.spectra).mean())
+        if not np.isfinite(score):
+            raise ValueError("Nonfinite translator validation score")
         row = {
             "epoch": epoch,
             "train_loss": loss_sum / len(order),
@@ -145,5 +159,10 @@ def train_translation(
             break
     provenance.update(epochs_completed=len(history), seconds=time.perf_counter() - started)
     write_json(output / "run.json", provenance)
+    from ..provenance import read_json
+
+    metadata = read_json(output / "checkpoint/metadata.json")
+    metadata["training"] = provenance
+    write_json(output / "checkpoint/metadata.json", metadata)
     model, _, _ = load_checkpoint(output / "checkpoint")
     return model, provenance

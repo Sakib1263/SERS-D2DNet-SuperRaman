@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
-    output = ROOT / "tmp/notebook_validation"
+    output = ROOT / "tmp/second_pass_notebooks"
     output.mkdir(parents=True, exist_ok=True)
     records = []
     for path in sorted((ROOT / "notebooks").glob("*.ipynb")):
@@ -24,21 +24,26 @@ def main():
         manager.kernel_spec.argv = [sys.executable, "-m", "ipykernel_launcher", "-f", "{connection_file}"]
         client = NotebookClient(book, km=manager, timeout=600, resources={"metadata": {"path": str(ROOT)}})
         env = os.environ.copy()
-        env["SERS_NOTEBOOK_OUTPUT"] = str(output / "work")
+        env["SERS_WORKFLOW_CONFIG"] = str(ROOT / "configs/workflow_demo.json")
+        env["SERS_WORKFLOW_OUTPUT"] = str(output / "workflow")
+        env["PYTHONPATH"] = str(ROOT / "src")
+        env["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
         try:
             book = client.execute(env=env)
         finally:
             if manager.has_kernel:
                 manager.shutdown_kernel(now=True)
         nbformat.write(book, output / path.name)
+        # Published notebooks retain verified synthetic outputs for immediate review.
+        nbformat.write(book, path)
         html, _ = HTMLExporter().from_notebook_node(book)
         (output / path.with_suffix(".html").name).write_text(html, encoding="utf-8")
         images = []
         for i, cell in enumerate(book.cells):
-            for item in cell.get("outputs", []):
+            for output_index, item in enumerate(cell.get("outputs", [])):
                 image = item.get("data", {}).get("image/png")
                 if image:
-                    dest = output / f"{path.stem}_cell{i}.png"
+                    dest = output / f"{path.stem}_cell{i}_output{output_index}.png"
                     dest.write_bytes(base64.b64decode(image))
                     images.append(dest.name)
         records.append(

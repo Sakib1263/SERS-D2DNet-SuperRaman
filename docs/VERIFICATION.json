@@ -1,190 +1,139 @@
 {
+  "date": "2026-10-15",
+  "software_version": "0.2.0",
+  "scope": "software and artifact verification; not paper-score reproduction",
   "contract_tests": {
+    "tests": 48,
     "errors": 0,
     "failures": 0,
-    "skipped": 0,
-    "tests": 28
-  },
-  "date": "2026-10-14",
-  "default_classifier_parameters": 448572,
-  "default_translator_parameters": 61511562,
-  "legacy_conversion": {
-    "maximum_absolute_logit_error": 0.0,
-    "original_training_configuration": "not inferred from parameter arrays",
-    "parity_checked": true,
-    "source_file_sha256": "07250b3dfd61f5072bdfe44815d73ed9be320efd9f98da45c6c65723a579a049",
-    "status": "converted_historical_checkpoint",
-    "verification_scope": "synthetic original-class object, not paper weights"
+    "skipped": 0
   },
   "notebooks": [
     {
-      "cells": 10,
+      "notebook": "00_control_center.ipynb",
       "executed": true,
-      "notebook": "01_data_contract.ipynb",
-      "plot_images": []
-    },
-    {
-      "cells": 10,
-      "executed": true,
-      "notebook": "02_train_translation.ipynb",
-      "plot_images": []
-    },
-    {
-      "cells": 10,
-      "executed": true,
-      "notebook": "03_train_classifier.ipynb",
-      "plot_images": []
-    },
-    {
-      "cells": 10,
-      "executed": true,
-      "notebook": "04_translate_and_classify.ipynb",
-      "plot_images": []
-    },
-    {
-      "cells": 8,
-      "executed": true,
-      "notebook": "05_explain_predictions.ipynb",
+      "cells": 21,
       "plot_images": [
-        "05_explain_predictions_cell6.png"
+        "00_control_center_cell14_output0.png",
+        "00_control_center_cell14_output1.png",
+        "00_control_center_cell16_output0.png"
+      ]
+    },
+    {
+      "notebook": "01_data_contract.ipynb",
+      "executed": true,
+      "cells": 14,
+      "plot_images": []
+    },
+    {
+      "notebook": "02_train_translation.ipynb",
+      "executed": true,
+      "cells": 14,
+      "plot_images": []
+    },
+    {
+      "notebook": "03_train_classifier.ipynb",
+      "executed": true,
+      "cells": 14,
+      "plot_images": []
+    },
+    {
+      "notebook": "04_translate_and_classify.ipynb",
+      "executed": true,
+      "cells": 14,
+      "plot_images": [
+        "04_translate_and_classify_cell10_output0.png",
+        "04_translate_and_classify_cell10_output1.png"
+      ]
+    },
+    {
+      "notebook": "05_explain_predictions.ipynb",
+      "executed": true,
+      "cells": 14,
+      "plot_images": [
+        "05_explain_predictions_cell8_output0.png"
       ]
     }
   ],
-  "numpy": "2.5.1",
-  "original_classifier_fixture": {
-    "original_SelfONN_sha256": "692c6c7ebf2d70db18f89bfd71d1078870dbbf0762576265c04b429a2e0ac57e",
-    "original_models_utils_sha256": "c6cf9366ab9313849962bd5f8cae8a83aed0b2cc7c69173378400a14bbcd80d0",
-    "parameter_count": 448572,
-    "scope": "synthetic initialization; not pretrained research weights",
-    "seed": 37,
-    "torch": "2.6.0+cu126"
+  "synthetic_completed_stages": 16,
+  "synthetic_cascade": {
+    "source_devices": 4,
+    "rows_per_device": 20,
+    "epochs_per_stage": 1,
+    "translator_width": 2
   },
-  "python": "3.13.14",
-  "pytorch_cuda": {
-    "forward_backward_finite": true,
-    "gpu": "NVIDIA GeForce RTX 3080 Ti Laptop GPU",
-    "maximum_cpu_cuda_logit_difference": 6.8177469074726105e-06,
-    "scope": "synthetic hardware smoke; not model efficacy or deterministic CUDA certification",
-    "torch": "2.6.0+cu126"
-  },
-  "real_input_checks": {
-    "devices": {
+  "default_translator_parameters": 61511562,
+  "default_classifier_parameters": 448572,
+  "original_graph_parity": {
+    "active_weight_shapes_match": true,
+    "output_maximum_absolute_errors": {
+      "level1": 0.0,
+      "level2": 0.0,
+      "level3": 0.0,
+      "out": 0.0
+    },
+    "parameters_width2": 15876,
+    "real_prepared_rows": 29545,
+    "real_split_counts": {
       "Enwave": {
-        "all_classes_present": true,
-        "checked_classes": 20,
-        "counts": [
-          3338,
-          465,
-          943
-        ],
-        "finite": true,
-        "logits_shape": [
-          20,
-          20
-        ],
-        "no_identity_or_duplicate_overlap": true,
-        "output_max": 0.5171091556549072,
-        "output_min": 0.18870992958545685,
-        "translated_shape": [
-          20,
-          1400
-        ]
+        "test": 943,
+        "train": 3338,
+        "validation": 465
       },
       "Fdefender": {
-        "all_classes_present": true,
-        "checked_classes": 20,
-        "counts": [
-          1196,
-          162,
-          334
-        ],
-        "finite": true,
-        "logits_shape": [
-          20,
-          20
-        ],
-        "no_identity_or_duplicate_overlap": true,
-        "output_max": 0.5169206857681274,
-        "output_min": 0.18872040510177612,
-        "translated_shape": [
-          20,
-          1400
-        ]
+        "test": 334,
+        "train": 1196,
+        "validation": 162
       },
       "RID": {
-        "all_classes_present": true,
-        "checked_classes": 20,
-        "counts": [
-          8473,
-          1199,
-          2408
-        ],
-        "finite": true,
-        "logits_shape": [
-          20,
-          20
-        ],
-        "no_identity_or_duplicate_overlap": true,
-        "output_max": 0.517112135887146,
-        "output_min": 0.18870794773101807,
-        "translated_shape": [
-          20,
-          1400
-        ]
+        "test": 2408,
+        "train": 8473,
+        "validation": 1199
       },
       "Renishaw": {
-        "all_classes_present": true,
-        "counts": [
-          3482,
-          494,
-          990
-        ],
-        "no_identity_or_duplicate_overlap": true
+        "test": 990,
+        "train": 3482,
+        "validation": 494
       },
       "Tec5": {
-        "all_classes_present": true,
-        "checked_classes": 20,
-        "counts": [
-          4259,
-          597,
-          1205
-        ],
-        "finite": true,
-        "logits_shape": [
-          20,
-          20
-        ],
-        "no_identity_or_duplicate_overlap": true,
-        "output_max": 0.5169474482536316,
-        "output_min": 0.18869759142398834,
-        "translated_shape": [
-          20,
-          1400
-        ]
+        "test": 1205,
+        "train": 4259,
+        "validation": 597
       }
     },
-    "scope": "input compatibility only; translator initialized, classifier synthetic-trained",
-    "translator_parameters": 61511562
+    "scope": "software parity and sealed real-data integrity; not efficacy",
+    "source_sha256": "9026c64849b1d27f171d69121684c00a3515eed2e8c175cca4d9d9bb94a19878"
   },
-  "remaining": [
-    "Original paper-trained checkpoints were not found",
-    "Published results are not reproduced",
-    "Full research training/evaluation is not run",
-    "Original raw preprocessing/grid needs recovery",
-    "GitHub publication and remote CI execution have not occurred"
-  ],
-  "research_dataset_sha256": "53c5375fe0e90d19abe50e6c091ee891d4cbfc7edc401080c0f43fbc6407d443",
-  "scope": "software verification; not published-score reproduction",
-  "software_version": "0.1.0",
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 3080 Ti Laptop GPU",
+    "maximum_cpu_cuda_logit_difference": 7.301568984985352e-07,
+    "pytorch_cuda_forward_backward_finite": true,
+    "scope": "synthetic trained-model hardware check; not efficacy or bitwise determinism",
+    "tensorflow": "2.21.0",
+    "tensorflow_visible_gpus": [],
+    "torch": "2.6.0+cu126"
+  },
   "supplied_files_verified_unchanged": 145,
-  "synthetic_cascade": {
-    "epochs_per_stage": 1,
-    "rows": 20,
-    "sample_identity_preserved": true,
-    "source_device": "Enwave",
-    "width": 2
+  "visual_review": {
+    "control_center_html": true,
+    "spectrum_confusion_validation_saliency_pngs": true
   },
-  "tensorflow": "2.21.0",
-  "tensorflow_gpu_verified": false,
-  "torch": "2.6.0+cu126"
+  "known_nonfatal_warnings": "Keras/NumPy array-copy deprecation during weight saving; numerical and checkpoint tests passed",
+  "remaining": [
+    "Original paper checkpoints unavailable",
+    "Paper/source discrepancies unresolved",
+    "Full research training and scientific efficacy evaluation not run",
+    "Raw preprocessing/grid not recovered",
+    "TensorFlow GPU execution unavailable",
+    "Remote CI and publication not verified"
+  ],
+  "installed_wheel": {
+    "cascade_rows": 20,
+    "contains_synthetic_models": true,
+    "framework_free_initial_import": true,
+    "imported_from_site_packages": true,
+    "neighbor_project_imports": false,
+    "scope": "installed-artifact software verification; not scientific efficacy",
+    "version": "0.2.0"
+  }
 }

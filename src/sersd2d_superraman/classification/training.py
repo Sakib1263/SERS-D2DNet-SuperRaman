@@ -27,10 +27,17 @@ class ClassifierTrainingConfig:
         for key in ("epochs", "batch_size", "early_stopping_patience", "plateau_patience"):
             if type(getattr(self, key)) is not int or getattr(self, key) < 1:
                 raise ValueError(f"{key} must be a positive integer")
-        if not np.isfinite(self.learning_rate) or self.learning_rate <= 0 or self.weight_decay < 0:
+        if (
+            not np.isfinite(self.learning_rate)
+            or self.learning_rate <= 0
+            or not np.isfinite(self.weight_decay)
+            or self.weight_decay < 0
+        ):
             raise ValueError("Invalid optimizer settings")
         if not 0 < self.lr_factor < 1:
             raise ValueError("lr_factor must lie between zero and one")
+        if type(self.seed) is not int or self.seed < 0:
+            raise ValueError("seed must be a nonnegative integer")
         return self
 
 
@@ -40,7 +47,12 @@ def train_classifier(train, validation, output, model_config=None, training_conf
     assert_disjoint(train, validation)
     if train.source_device != "Renishaw" or validation.source_device != "Renishaw":
         raise ValueError("The reusable classifier trains and selects on Renishaw only")
-    if train.labels is None or validation.labels is None or set(train.labels) != set(range(20)):
+    if (
+        train.labels is None
+        or validation.labels is None
+        or set(train.labels) != set(range(20))
+        or set(validation.labels) != set(range(20))
+    ):
         raise ValueError("Classifier fitting requires all 20 classes and labeled validation")
     config = (training_config or ClassifierTrainingConfig()).validate()
     model_config = (model_config or ClassifierConfig()).validate()
@@ -71,6 +83,8 @@ def train_classifier(train, validation, output, model_config=None, training_conf
     started = time.perf_counter()
     provenance = {
         "status": "trained",
+        "synthetic": bool(train.metadata.get("synthetic", False)),
+        "protocol": "maintained_independent_validation",
         "objective": "cross_entropy_on_logits",
         "selection": "validation_loss",
         "selection_direction": "min",
@@ -125,5 +139,10 @@ def train_classifier(train, validation, output, model_config=None, training_conf
             break
     provenance.update(epochs_completed=len(history), seconds=time.perf_counter() - started)
     write_json(output / "run.json", provenance)
+    from ..provenance import read_json
+
+    metadata = read_json(output / "checkpoint/metadata.json")
+    metadata["training"] = provenance
+    write_json(output / "checkpoint/metadata.json", metadata)
     model, _ = load_checkpoint(output / "checkpoint", device=device)
     return model, provenance

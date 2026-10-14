@@ -1,7 +1,3 @@
-# Examples
+# Script entry point
 
-The fully working, data-independent demonstration is `sers-pipeline demo --output output/synthetic_demo`.
-The five notebooks walk through the same maintained package. Install the package in their Python kernel first.
-Notebook 4 reads the synthetic bundle created by the demo; research training is disabled in notebook defaults.
-
-Research commands and bundle creation are documented in the root README. No published weights or research spectra are included.
+`python examples/run_workflow.py --config configs/workflow_demo.json` runs the same shared workflow as the notebook control center. It executes the selected configuration, including research training when a research configuration is provided. Install the package in this interpreter first. For interactive inspection, use `notebooks/00_control_center.ipynb`.

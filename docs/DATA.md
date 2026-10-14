@@ -35,3 +35,7 @@ Exact duplicate grouping is a technical leakage precaution. It cannot establish 
 ## Raman axis
 
 Plots default to spectral bin index. The paper's nominal 400-1800 cm^-1 range and 1400 samples do not establish whether one endpoint is excluded. Do not infer an exact 1 cm^-1 axis using an inclusive 1400-point linspace. Raw baseline correction, smoothing boundaries, resampling, and endpoint conventions require original acquisition/preprocessing evidence before they are added.
+
+## Domain identity after translation
+
+`source_device` records the acquisition instrument and remains unchanged after translation. The reserved `metadata.translation` object records the source, Renishaw target domain, checkpoint, and input hashes. Already-translated batches are accepted by `classify` and rejected by `translate` or the full cascade to prevent applying the device mapping twice.

@@ -1,0 +1,72 @@
+{
+  "doi": "10.1016/j.saa.2025.126931",
+  "paper_pdf_sha256": "21a514d9ca1a668ef628ea9616e7d3bbb2471f444c813db16991d63b8ee0991d",
+  "software_version": "0.2.0",
+  "exact_reproduction_verified": false,
+  "published_performance_verified": false,
+  "claims": [
+    {
+      "item": "Two independent stages, four source devices, one Renishaw classifier",
+      "paper_sections": "3.1, 3.6",
+      "alignment": "matches"
+    },
+    {
+      "item": "1400 bins, 20 analyte classes, kernels 1/3/5/7, q=3, n=16",
+      "paper_sections": "3.2-3.5",
+      "alignment": "matches recovered primary defaults"
+    },
+    {
+      "item": "Translator parameters",
+      "paper": 6150000,
+      "recovered": 61511562,
+      "alignment": "unresolved"
+    },
+    {
+      "item": "Mixed pooling",
+      "paper": "0.5 max + 0.5 average",
+      "recovered": "max + average followed by learned 1x1 convolution",
+      "alignment": "differs"
+    },
+    {
+      "item": "MFA interpolation",
+      "paper": "bilinear",
+      "recovered": "repeated UpSampling1D",
+      "alignment": "differs"
+    },
+    {
+      "item": "Classifier shifts",
+      "paper": "integer +/-2",
+      "recovered": "learned fractional, shared two-coordinate sampling",
+      "alignment": "differs"
+    },
+    {
+      "item": "Classifier loss",
+      "paper": "MAE; target encoding unspecified",
+      "maintained": "cross-entropy on logits",
+      "alignment": "differs"
+    },
+    {
+      "item": "50 translation samples per class, 10% fit validation, entire reference evaluation",
+      "paper_section": "3.6",
+      "maintained": "independent 70/10/20 roles; up to 50 fit pairs/class and independent reference test",
+      "alignment": "protocol change"
+    },
+    {
+      "item": "Classifier fit on entire Renishaw domain",
+      "paper_section": "3.6",
+      "maintained": "Renishaw fit role; separate Renishaw validation/test",
+      "alignment": "protocol change"
+    },
+    {
+      "item": "Physical preprocessing",
+      "paper": "polynomial baseline; moving average k=3; nominal 400-1800 cm^-1 crop",
+      "maintained": "preprocessed inputs only; precise raw settings/grid not recovered",
+      "alignment": "incomplete evidence"
+    },
+    {
+      "item": "Published scores, 9 MB footprint, 3.27 ms total latency",
+      "maintained": "not claimed; fresh full experiments and measurements required",
+      "alignment": "unverified"
+    }
+  ]
+}

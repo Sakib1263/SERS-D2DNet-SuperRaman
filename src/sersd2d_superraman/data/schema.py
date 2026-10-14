@@ -38,24 +38,33 @@ class SpectrumBatch:
         if self.sample_ids is None:
             self.sample_ids = np.asarray([f"{self.source_device}:{i}" for i in range(len(x))])
         self.sample_ids = np.asarray(self.sample_ids, dtype=str)
-        if self.sample_ids.shape != (len(x),) or len(np.unique(self.sample_ids)) != len(x):
+        if (
+            self.sample_ids.shape != (len(x),)
+            or len(np.unique(self.sample_ids)) != len(x)
+            or np.any(np.char.strip(self.sample_ids) == "")
+        ):
             raise ValueError("sample_ids must have one unique string per spectrum")
         if self.labels is not None:
             y = np.asarray(self.labels)
-            if y.shape != (len(x),) or not np.issubdtype(y.dtype, np.number):
+            if y.shape != (len(x),) or not np.issubdtype(y.dtype, np.number) or np.iscomplexobj(y):
                 raise ValueError("labels must be numeric [N]")
             if not np.isfinite(y).all() or np.any(y != np.floor(y)) or np.any((y < 0) | (y > 19)):
                 raise ValueError("Labels must be integers 0 through 19")
             self.labels = y.astype(np.int64)
         if self.axis_cm1 is not None:
+            if np.iscomplexobj(self.axis_cm1):
+                raise ValueError("Raman coordinates must be real values")
             a = np.asarray(self.axis_cm1, dtype=np.float64)
             if a.shape != (LENGTH,) or not np.isfinite(a).all() or not np.all(np.diff(a) > 0):
                 raise ValueError("axis_cm1 must contain 1400 finite, increasing wavenumbers")
             self.axis_cm1 = a
         if self.groups is not None:
             self.groups = np.asarray(self.groups, dtype=str)
-            if self.groups.shape != (len(x),):
+            if self.groups.shape != (len(x),) or np.any(np.char.strip(self.groups) == ""):
                 raise ValueError("groups must have one acquisition-group ID per spectrum")
+        if not isinstance(self.metadata, dict):
+            raise ValueError("metadata must be a JSON object")
+        json.dumps(self.metadata, allow_nan=False)
         return self
 
     def subset(self, rows):
@@ -75,6 +84,8 @@ class SpectrumBatch:
             "spectra_sha256": array_hash(self.spectra),
             "sample_ids_sha256": array_hash(self.sample_ids),
             "labels_sha256": None if self.labels is None else array_hash(self.labels),
+            "axis_cm1_sha256": None if self.axis_cm1 is None else array_hash(self.axis_cm1),
+            "groups_sha256": None if self.groups is None else array_hash(self.groups),
             "source_device": self.source_device,
             "rows": len(self.spectra),
             "metadata": self.metadata,
