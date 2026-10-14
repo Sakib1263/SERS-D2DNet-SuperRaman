@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sersd2d-superraman"
-version = "0.2.0"
+version = "0.3.0"
 description = "Standalone SERS-D2DNet translation and SuperRaman analyte classification"
 readme = "README.md"
 requires-python = ">=3.11,<3.14"

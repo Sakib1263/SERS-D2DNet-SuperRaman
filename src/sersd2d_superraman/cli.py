@@ -9,7 +9,7 @@ import numpy as np
 from .data import SpectrumBatch, load_batch, save_batch, load_device, DEVICES, SOURCE_DEVICES
 from .data.registry import canonical_device
 from .data.splits import independent_split, assert_disjoint
-from .provenance import fresh_directory, file_hash, read_json, write_json
+from .provenance import fresh_directory, file_hash, read_json, write_json, write_npz
 from .devices import tensorflow_device
 
 
@@ -75,6 +75,8 @@ def prepare(dataset, output, seed=37, validation_fraction=0.1, test_fraction=0.2
 
 def _config(path):
     obj = {} if path is None else read_json(path)
+    if not isinstance(obj, dict):
+        raise ValueError("Configuration must be a JSON object")
     if obj.get("executable") is False:
         raise ValueError("Historical evidence configuration is not executable; choose a maintained config")
     if set(obj) - {"model", "training"}:
@@ -104,6 +106,10 @@ def _run(args):
     ):
         if Path(args.output).exists():
             raise ValueError("Output file already exists; choose a new artifact path")
+    if args.command == "doctor":
+        from .diagnostics import environment_report
+
+        return environment_report()
     if args.command == "make-synthetic":
         return synthetic(args.output, args.per_class, args.seed)
     if args.command == "prepare":
@@ -208,7 +214,7 @@ def _run(args):
         if out.suffix != ".npz":
             raise ValueError("Predictions require a .npz output")
         out.parent.mkdir(parents=True, exist_ok=True)
-        np.savez_compressed(
+        write_npz(
             out,
             logits=logits,
             probabilities=probabilities,
@@ -258,6 +264,21 @@ def _run(args):
             or source.source_device != translated.source_device
         ):
             raise ValueError("Translated rows do not match original input")
+        provenance = translated.metadata.get("translation", {})
+        if source.source_device == "Renishaw" and translated.identity() == source.identity():
+            pass  # The reference-domain inference path explicitly bypasses translation.
+        elif (
+            not isinstance(provenance, dict)
+            or provenance.get("input_file_sha256") != file_hash(args.input)
+            or provenance.get("source_device") != source.source_device
+            or provenance.get("target_device") != "Renishaw"
+            or provenance.get("output_head") != "out"
+            or provenance.get("output_range_policy") != "linear_unclipped"
+        ):
+            raise ValueError("Translation provenance does not match the supplied original input")
+        for key in ("labels_sha256", "axis_cm1_sha256", "groups_sha256"):
+            if source.identity()[key] != translated.identity()[key]:
+                raise ValueError(f"Translation changed original row annotations: {key}")
         report = translation_metrics(source, translated.spectra, reference)
         write_json(args.output, report)
         return report["macro_class_mean"]
@@ -333,7 +354,7 @@ def _run(args):
         }
         if batch.axis_cm1 is not None:
             arrays["axis_cm1"] = batch.axis_cm1
-        np.savez_compressed(out, **arrays)
+        write_npz(out, **arrays)
         return {"output": str(out), "rows": len(saliency)}
     if args.command in ("benchmark", "audit-model"):
         if args.kind == "translation":
@@ -438,6 +459,7 @@ def parser():
     p = argparse.ArgumentParser(description=__doc__)
     sub = p.add_subparsers(dest="command", required=True)
     for name in (
+        "doctor",
         "make-synthetic",
         "prepare",
         "inspect",
@@ -468,7 +490,7 @@ def parser():
             "benchmark",
         ):
             s.add_argument("--input", required=True)
-        if name not in ("inspect", "audit-model"):
+        if name not in ("doctor", "inspect", "audit-model"):
             s.add_argument("--output", required=True)
         if name in ("translate", "classify", "explain", "benchmark", "audit-model"):
             s.add_argument("--checkpoint", required=name != "audit-model")
@@ -537,7 +559,16 @@ def main(argv=None):
     args = parser().parse_args(argv)
     try:
         result = _run(args)
-    except (ValueError, TypeError, OSError, ModuleNotFoundError, RuntimeError) as error:
+    except ModuleNotFoundError as error:
+        extras = {"tensorflow": "translation", "torch": "classification", "matplotlib": "notebooks"}
+        extra = extras.get((error.name or "").split(".")[0])
+        if extra:
+            raise SystemExit(
+                f"Missing {error.name} in {sys.executable}. Install the '{extra}' extra in this kernel: "
+                f'python -m pip install -e ".[{extra}]"'
+            ) from error
+        raise SystemExit(f"ModuleNotFoundError: {error}") from error
+    except (ValueError, TypeError, OSError, RuntimeError) as error:
         raise SystemExit(f"{type(error).__name__}: {error}") from error
     # Reports retain details in their files; stdout remains bounded.
     payload = json.dumps(result, indent=2, allow_nan=False)

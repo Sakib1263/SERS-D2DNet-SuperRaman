@@ -13,7 +13,7 @@ from torch import nn
 from torch.nn import functional as F
 from ..data.registry import registry_hash
 from ..preprocessing import CLASSIFIER_TRANSFORM, classifier_input
-from ..provenance import file_hash, runtime, write_json
+from ..provenance import file_hash, runtime, publish_checkpoint
 
 
 @dataclass(frozen=True)
@@ -118,9 +118,7 @@ def predict_logits(model, spectra, batch_size=64, device="cpu"):
 def save_checkpoint(directory, model, training=None):
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
-    weights = directory / "model.pt"
     state = {k: v.detach().cpu() for k, v in model.state_dict().items()}
-    torch.save(state, weights)
     metadata = {
         "schema_version": 1,
         "kind": "classification",
@@ -133,14 +131,11 @@ def save_checkpoint(directory, model, training=None):
         "input_transform": CLASSIFIER_TRANSFORM,
         "class_registry_sha256": registry_hash(),
         "parameters": sum(x.numel() for x in model.parameters()),
-        "weights": weights.name,
-        "weights_sha256": file_hash(weights),
         "runtime": runtime("torch"),
         "training": training or {"status": "untrained_initialization"},
         "paper_reproduction_certified": False,
     }
-    write_json(directory / "metadata.json", metadata)
-    return metadata
+    return publish_checkpoint(directory, "model.pt", lambda path: torch.save(state, path), metadata)
 
 
 def load_checkpoint(directory, device="cpu"):

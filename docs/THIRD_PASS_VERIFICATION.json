@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "software_version": "0.3.0",
+  "review_date": "2026-10-15",
+  "base_commit": "12252ef",
+  "scope": "New reliability, cancellation, publication, cache identity, efficiency, editorial, and usability perspectives only.",
+  "new_test_runs": [
+    {
+      "report": "third_pass_reliability.xml",
+      "tests": 22,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 1.392,
+      "cases": [
+        "test_failed_npz_publication_leaves_no_final_or_partial_file",
+        "test_atomic_no_clobber_when_another_writer_wins",
+        "test_failed_checkpoint_update_preserves_previous_committed_pair[weights-model.pt]",
+        "test_failed_checkpoint_update_preserves_previous_committed_pair[weights-model.weights.h5]",
+        "test_failed_checkpoint_update_preserves_previous_committed_pair[metadata-model.pt]",
+        "test_failed_checkpoint_update_preserves_previous_committed_pair[metadata-model.weights.h5]",
+        "test_checkpoint_success_retires_previous_managed_weights",
+        "test_interrupted_controller_marks_failure_and_releases_lock",
+        "test_live_controller_rechecks_configuration_snapshot",
+        "test_editable_source_change_invalidates_cached_stage_without_version_bump",
+        "test_source_changes_during_a_worker_fail_the_stage",
+        "test_incomplete_workflow_initialization_has_no_committed_state",
+        "test_file_backed_worker_keeps_full_log_and_bounded_error_tail",
+        "test_worker_interrupt_terminates_its_posix_process_group",
+        "test_translation_evaluation_rejects_same_ids_from_a_different_input_file",
+        "test_disjointness_hashes_each_role_once",
+        "test_json_refuses_ambiguous_or_nonfinite_configuration[{\"mode\":\"demo\",\"mode\":\"research\"}]",
+        "test_json_refuses_ambiguous_or_nonfinite_configuration[{\"learning_rate\":NaN}]",
+        "test_json_refuses_ambiguous_or_nonfinite_configuration[{\"value\":Infinity}]",
+        "test_bundle_rejects_false_complete_device_declaration",
+        "test_doctor_reports_missing_notebook_packages_without_backend_imports",
+        "test_missing_backend_message_identifies_extra_and_interpreter"
+      ]
+    },
+    {
+      "report": "third_pass_additional.xml",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 1.601,
+      "cases": [
+        "test_interrupt_after_metadata_commit_keeps_new_checkpoint_readable",
+        "test_controller_records_the_metadata_selected_checkpoint_weight",
+        "test_nested_worker_cancellation_reaches_the_real_grandchild"
+      ]
+    }
+  ],
+  "new_tests_passed": 25,
+  "prior_tests_repeated": false,
+  "prior_tests_not_repeated": [
+    "classifier and translator model regressions/parity",
+    "notebook execution and synthetic cascade",
+    "GPU/hardware probes",
+    "real-data sealed-content validation",
+    "wheel installation/inference and release builds"
+  ],
+  "static_model_computation_preserved": {
+    "src/sersd2d_superraman/classification/model.py": [
+      "ClassifierConfig",
+      "PolynomialShift1d",
+      "SuperRaman",
+      "predict_logits"
+    ],
+    "src/sersd2d_superraman/translation/model.py": [
+      "TranslationConfig",
+      "build_model",
+      "primary_output"
+    ]
+  },
+  "notebooks": [
+    {
+      "path": "notebooks/00_control_center.ipynb",
+      "code_cells_unchanged": true,
+      "outputs_cleared": true,
+      "executed_this_pass": false
+    },
+    {
+      "path": "notebooks/01_data_contract.ipynb",
+      "code_cells_unchanged": true,
+      "outputs_cleared": true,
+      "executed_this_pass": false
+    },
+    {
+      "path": "notebooks/02_train_translation.ipynb",
+      "code_cells_unchanged": true,
+      "outputs_cleared": true,
+      "executed_this_pass": false
+    },
+    {
+      "path": "notebooks/03_train_classifier.ipynb",
+      "code_cells_unchanged": true,
+      "outputs_cleared": true,
+      "executed_this_pass": false
+    },
+    {
+      "path": "notebooks/04_translate_and_classify.ipynb",
+      "code_cells_unchanged": true,
+      "outputs_cleared": true,
+      "executed_this_pass": false
+    },
+    {
+      "path": "notebooks/05_explain_predictions.ipynb",
+      "code_cells_unchanged": true,
+      "outputs_cleared": true,
+      "executed_this_pass": false
+    }
+  ],
+  "environment_diagnostic": {
+    "doctor_command_inspected": true,
+    "platform": "WSL/Linux",
+    "python": "3.13.14",
+    "installed_metadata": {
+      "tensorflow": "2.21.0",
+      "torch": "2.6.0+cu126",
+      "numpy": "2.5.1",
+      "h5py": "3.14.0"
+    },
+    "missing_notebook_packages": [],
+    "frameworks_or_gpu_initialized_by_diagnostic": false
+  },
+  "cleanup": {
+    "recovery_directory": "SERS-D2DNet-SuperRaman-Recovery-20261015-ThirdPass (sibling of checkout)",
+    "retired": [
+      "old notebook execution/previews/demo models",
+      "old installed-wheel verification outputs",
+      "old reports and caches",
+      "obsolete installation-check environment",
+      "version-0.2 release binaries"
+    ],
+    "active_research_data_preserved": true,
+    "development_environment_preserved": true,
+    "meaningful_regression_fixtures_retained": true
+  },
+  "editorial_review": {
+    "bibliography_checked_against_primary_sources": true,
+    "associated_paper_credit_follows_supplied_version_of_record": true,
+    "non_project_boilerplate_matches": 0
+  },
+  "limitations": [
+    "No full scientific training or paper-score reproduction.",
+    "No repeat numerical/model serialization, notebook, GPU, real-data, installation, or release-build validation in this pass.",
+    "Native Windows process-tree cancellation and power-loss durability are not certified.",
+    "Model parameter-count, operator wording, raw preprocessing, and historical-selection discrepancies remain documented."
+  ],
+  "paper_reproduction_certified": false,
+  "committed_or_pushed_by_this_review": false,
+  "static_review": {
+    "changed_python_files_parsed": 20,
+    "local_markdown_links_valid": true,
+    "public_notebook_code_cells_unchanged": true,
+    "public_text_files_reviewed": 79,
+    "package_source_sha256": "ff8f7f9ce7d4043668285d94521e738d5f7e935100ca05208ff01fc87bc411dd",
+    "changed_python_lint": "passed",
+    "notebook_execution": "not repeated, as requested"
+  }
+}

@@ -3,13 +3,13 @@
 from pathlib import Path
 import os
 import shutil
-import subprocess
 import sys
 import time
 import numpy as np
 from ..data import load_batch, SOURCE_DEVICES, registry_hash
 from ..provenance import file_hash, fresh_directory, read_json, write_json
 from ..artifacts import checkpoint_metadata
+from ..workers import run_worker
 
 
 def create_bundle(output, classifier, translators, allow_partial=False, allow_untrained=False):
@@ -44,6 +44,10 @@ def create_bundle(output, classifier, translators, allow_partial=False, allow_un
         dest.mkdir(parents=True)
         for name in ("metadata.json", metadata[key]["weights"]):
             shutil.copy2(directory / name, dest / name)
+        # Reject a checkpoint changed between validation and the copy.
+        copied = checkpoint_metadata(dest)
+        if copied != metadata[key]:
+            raise ValueError(f"Checkpoint changed while copying: {key}")
         entries[key] = {
             "directory": dest.relative_to(output).as_posix(),
             "metadata_sha256": file_hash(dest / "metadata.json"),
@@ -72,6 +76,8 @@ def verify_bundle(path):
         raise ValueError("Unsupported bundle or class registry")
     if set(bundle["translators"]) - set(SOURCE_DEVICES):
         raise ValueError("Unknown translator device in bundle")
+    if "partial" in bundle and bundle["partial"] != (set(bundle["translators"]) != set(SOURCE_DEVICES)):
+        raise ValueError("Bundle partial-device declaration is inconsistent")
     directories = {}
     synthetic_models = False
     untrained_models = False
@@ -117,13 +123,16 @@ def run_pipeline(bundle_path, input_path, output, batch_size=16, device="cpu", t
     def launch(command, tensorflow=False):
         env = os.environ.copy()
         env["PYTHONDONTWRITEBYTECODE"] = "1"
+        env["PYTHONUTF8"] = "1"
+        env["PYTHONUNBUFFERED"] = "1"
         if tensorflow and translation_device == "cpu":
             env["CUDA_VISIBLE_DEVICES"] = "-1"
-        result = subprocess.run(
-            [sys.executable, "-m", "sersd2d_superraman", *command], env=env, capture_output=True, text=True
+        label = "translate" if tensorflow else f"classify_{Path(command[command.index('--output') + 1]).stem}"
+        run_worker(
+            [sys.executable, "-m", "sersd2d_superraman", *command],
+            output / "logs" / f"{label}.log",
+            env=env,
         )
-        if result.returncode:
-            raise RuntimeError(f"Stage {command[0]} failed:\n{result.stderr[-6000:]}")
 
     translated = output / "translated.npz"
     if batch.source_device == "Renishaw":

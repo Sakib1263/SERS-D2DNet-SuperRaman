@@ -114,15 +114,24 @@ def independent_split(batch, seed=37, validation_fraction=0.1, test_fraction=0.2
 
 
 def assert_disjoint(*batches):
+    groups = [set(b.groups) if b.groups is not None else set() for b in batches]
+    identities = [set(b.sample_ids) for b in batches]
+    hashes = {}
+
+    def content(index):
+        if index not in hashes:
+            hashes[index] = set(fingerprints(batches[index].spectra))
+        return hashes[index]
+
     for i, left in enumerate(batches):
-        for right in batches[i + 1 :]:
-            if left.groups is not None and right.groups is not None and set(left.groups) & set(right.groups):
+        for j in range(i + 1, len(batches)):
+            if groups[i] & groups[j]:
                 raise ValueError("Acquisition group overlap between split roles")
-            if left.source_device != right.source_device:
+            if left.source_device != batches[j].source_device:
                 continue
-            if set(left.sample_ids) & set(right.sample_ids):
+            if identities[i] & identities[j]:
                 raise ValueError("Sample identity overlap between split roles")
-            if set(fingerprints(left.spectra)) & set(fingerprints(right.spectra)):
+            if content(i) & content(j):
                 raise ValueError("Duplicate spectrum overlap between split roles")
 
 

@@ -31,7 +31,7 @@ The release accepts already preprocessed inputs. The original notebooks load bas
 
 The obsolete historical configuration is retained in external recovery storage. `configs/maintained/` defines the current model/trainer defaults, and `configs/workflow_research.json` combines them for the notebook frontend.
 
-## Second-pass alignment decision
+## Selection and preprocessing decisions
 
 Section 3.6 states 50 selected translation samples/class, 10% held out from that selection for validation, evaluation against the entire target domain, and classifier training on all Renishaw spectra. The maintained 70/10/20 protocol differs intentionally to reserve independent test data. A small class with only 50 total rows cannot supply 50 fit examples while also reserving validation and test rows. Actual fit counts and a `paper_50_pairs_per_class_achieved` field expose this difference.
 

@@ -1,6 +1,6 @@
-include README.md LICENSE NOTICE.md CITATION.cff CHANGELOG.md .gitignore .gitattributes
+include README.md LICENSE NOTICE.md CITATION.cff CHANGELOG.md CONTRIBUTING.md .gitignore .gitattributes
 recursive-include src *.py
-recursive-include configs *.json
+recursive-include configs *.json *.txt
 recursive-include notebooks *.ipynb
 recursive-include tests *.py *.npz *.json
 recursive-include examples *.py *.md
@@ -11,3 +11,5 @@ include docs/PAPER_IMPLEMENTATION_MAP.md docs/DATA.md docs/REPRODUCIBILITY.md do
 global-exclude *.pyc
 prune configs/local
 prune docs/audit
+
+include docs/REFERENCES.md docs/THIRD_PASS_REVIEW.md docs/THIRD_PASS_VERIFICATION.json

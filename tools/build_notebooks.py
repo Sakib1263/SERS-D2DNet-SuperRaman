@@ -5,8 +5,10 @@ from textwrap import dedent
 import subprocess
 import sys
 import nbformat as nbf
+import tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
+VERSION = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
 SETUP = """
 import numpy as np
 from sersd2d_superraman import __version__
@@ -39,10 +41,10 @@ def write(name, title, goal, cells):
     book = nbf.v4.new_notebook(
         cells=[
             md(
-                f"# {title}\n\n**SERS-D2DNet + SuperRaman · v0.2.0**\n\n[Notebook guide](../docs/NOTEBOOK_GUIDE.md) · [Paper alignment](../docs/PAPER_IMPLEMENTATION_MAP.md) · [README](../README.md)\n\n## Goal\n{goal}"
+                f"# {title}\n\n**SERS-D2DNet + SuperRaman · v{VERSION}**\n\n[Notebook guide](../docs/NOTEBOOK_GUIDE.md) · [Paper alignment](../docs/PAPER_IMPLEMENTATION_MAP.md) · [README](../README.md)\n\n## Goal\n{goal}"
             ),
             md(
-                "## Setup\nSelect the Python environment where `.[notebooks]` is installed. Edit `CONFIG` below to select the demo or your research configuration. Every notebook opens the same persistent run. Configuration changes require a new `run_directory`. The default executes a synthetic, one-epoch, width-2 demonstration across all four portable devices."
+                "## Setup\nPublic notebooks start without saved execution outputs. Select the Python environment where `.[notebooks]` is installed. Edit `CONFIG` below to select the demo or your research configuration. Every notebook opens the same persistent run. Configuration changes require a new `run_directory`. The default executes a synthetic, one-epoch, width-2 demonstration across all four portable devices."
             ),
             code('CONFIG = "configs/workflow_demo.json"\nRUN_RESEARCH_TRAINING = False'),
             code(SETUP),
@@ -51,7 +53,7 @@ def write(name, title, goal, cells):
             ),
             *cells,
             md(
-                "## Checks\nArtifact reuse checks file hashes and input/configuration identities. Test rows are evaluated after checkpoint selection; they do not choose the models."
+                "## Checks\nArtifact reuse checks package-source and file hashes plus input/configuration identities. Full worker logs are stored under the run directory in logs/. Test rows are evaluated after checkpoint selection; they do not choose the models."
             ),
             code('display_table(["Stage", "Status"], workflow.status().items())'),
             md(
@@ -66,7 +68,7 @@ def write(name, title, goal, cells):
     }
     book.metadata.language_info = {"name": "python"}
     book.metadata.sers_pipeline = {
-        "version": "0.2.0",
+        "version": VERSION,
         "mode": "control_center",
         "default_data": "synthetic",
         "paper_reproduction_certified": False,

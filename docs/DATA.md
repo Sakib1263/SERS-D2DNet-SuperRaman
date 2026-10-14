@@ -1,8 +1,8 @@
 # Data contract and access
 
-The paper states that data are available on request. This release does not distribute research spectra, paper model weights, or historical saliency outputs. The demonstration and classifier parity fixture are synthetic and marked accordingly.
+The paper states that data are available on request. This release does not distribute research spectra, paper model weights, or historical saliency outputs. The demonstration data and both model-compatibility fixtures are synthetic and marked accordingly.
 
-The inspected original HDF5 has SHA-256 `53c5375fe0e90d19abe50e6c091ee891d4cbfc7edc401080c0f43fbc6407d443`, 29,545 spectra, and the five root-key device arrays described below. Each spectra array has shape `[N,1400]`, float64 storage, finite values, and range [0,1]. Labels are integer IDs 0-19. These properties were checked live; acquisition/sample/substrate groups and a physical Raman axis are not present in this model contract.
+The inspected original HDF5 has SHA-256 `53c5375fe0e90d19abe50e6c091ee891d4cbfc7edc401080c0f43fbc6407d443`, 29,545 spectra, and the five root-key device arrays described below. Each spectral array has shape `[N,1400]`, float64 storage, finite values, and range [0,1]. Labels are integer IDs 0-19. These properties were recorded during the earlier data audit and were not rechecked for version 0.3. Acquisition, sample, and substrate groups and a physical Raman axis are not stored in that file.
 
 | Device | Spectra key | Label key | Rows |
 |---|---|---|---:|

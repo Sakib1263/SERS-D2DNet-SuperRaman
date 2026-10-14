@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0 - 2026-10-15
+
+- Atomic no-clobber array publication and content-addressed checkpoint weights with metadata committed last.
+- File-backed worker logs, interruption status/cancellation, locked initialization, and editable-source-aware stage reuse.
+- Translation/input provenance binding, strict JSON configuration parsing, and fewer repeated split hashes/group-set constructions.
+- Backend-free environment diagnostics, CPU framework constraints, a clearer first-run README, and verified method bibliography.
+- Clean public notebooks, reusable validation output directories, descriptive test naming, and external recovery of obsolete generated artifacts.
+- New targeted reliability/efficiency checks only; prior model, notebook, hardware, data, and installed-wheel checks were not replayed.
+
 ## 0.2.0 - 2026-10-15
 
 - Notebook control center and shared persistent workflow for all four device translators and the reusable classifier.

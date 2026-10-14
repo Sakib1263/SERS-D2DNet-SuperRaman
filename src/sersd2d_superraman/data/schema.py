@@ -5,7 +5,7 @@ from pathlib import Path
 import json
 import numpy as np
 from .registry import canonical_device
-from ..provenance import array_hash, file_hash
+from ..provenance import array_hash, file_hash, write_npz
 
 LENGTH = 1400
 
@@ -110,7 +110,7 @@ def save_batch(path, batch, normalized=True):
         value = getattr(batch, key)
         if value is not None:
             arrays[key] = value
-    np.savez_compressed(path, **arrays)
+    write_npz(path, **arrays)
     return path
 
 

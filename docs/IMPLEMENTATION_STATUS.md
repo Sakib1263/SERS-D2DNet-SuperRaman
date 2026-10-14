@@ -1,10 +1,10 @@
 # Implementation and release status
 
-15 October 2026 · Version 0.2.0 research beta. The comprehensive engineering second pass is complete. Exact agreement with the paper and reproduction of its published results remain unresolved.
+15 October 2026 · Version 0.3.0 research beta. The third pass reviews failure handling, source-aware artifact reuse, efficiency, first-run usability, bibliography, and repository hygiene. New evidence is in [THIRD_PASS_VERIFICATION.json](THIRD_PASS_VERIFICATION.json); [VERIFICATION.json](VERIFICATION.json) preserves version-0.2 results without rerunning them. Exact agreement with the paper and reproduction of its published results remain unresolved.
 
-## Completed and checked
+## Historical second-pass checks (version 0.2; not repeated)
 
-- Notebook control center plus five focused stage notebooks, sharing one persistent configuration/run and retaining verified synthetic outputs.
+- Notebook control center plus five focused stage notebooks, sharing one persistent configuration/run with synthetic outputs verified at that time.
 - All-four-device synthetic workflow: four independent translators, one Renishaw classifier, portable bundle, and before/after comparisons on 20 held-out rows per device.
 - 48 passing contract/regression tests, no failures/errors/skips; static checks pass. The suite includes original classifier forward/input-gradient parity and a public synthetic original-translator weight/output fixture.
 - Cleaned translator matches the original on every output head with zero numerical error on the comparison batch. Default graph remains 61,511,562 parameters; classifier remains 448,572.
@@ -13,7 +13,7 @@
 - Professional README, notebook operating guide, structured paper contract, reproducibility/model/benchmark documents, and updated release/citation metadata.
 - Obsolete trees, audit scripts, inactive model builders, previous artifacts, and the old wheel-testing environment moved outside the checkout. All 145 supplied files remain unchanged and recoverable.
 
-Current evidence is in [VERIFICATION.json](VERIFICATION.json); implementation findings are in [SECOND_PASS_REVIEW.md](SECOND_PASS_REVIEW.md). Source ZIP, wheel, source distribution, and hashes are built locally. GitHub Actions is configured; remote CI success and publication are not implied.
+Historical evidence is in [VERIFICATION.json](VERIFICATION.json); implementation findings are in [SECOND_PASS_REVIEW.md](SECOND_PASS_REVIEW.md). Version-0.2 source ZIP, wheel, source distribution, and hashes were built locally and are now preserved outside the checkout. Version-0.3 release binaries have not been rebuilt. GitHub Actions is configured; remote CI success and publication are not implied.
 
 ## Prepared real-data roles
 
@@ -33,4 +33,4 @@ The paper/source differences include translator parameter count, mixed pooling, 
 
 No paper-trained checkpoint was found in the supplied original experiment folders. Full research fitting and independent evaluation must precede new performance claims. Raw polynomial-baseline parameters, smoothing/resampling boundaries, and the precise Raman grid still require recovery. Optional baselines, chemistry holdouts, SHAP, operator substitutions, cross-framework conversion, and joint training remain separately scoped studies.
 
-Keras/NumPy emits nonfatal array-copy deprecation warnings during weight saving. Numerical parity, gradients, serialization, and integration checks pass. The original WSL environment is preserved; installation/build checks use separate project environments. Current work has not been committed or pushed.
+Version-0.2 verification recorded nonfatal Keras/NumPy array-copy deprecation warnings during weight saving; its numerical parity, gradient, serialization, and integration checks passed at that time. The original WSL environment is preserved; installation/build checks use separate project environments. The second pass was committed as `12252ef`. Third-pass changes are left for the maintainer to review and commit; no push is performed by this pass.

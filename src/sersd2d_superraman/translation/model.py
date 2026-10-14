@@ -3,7 +3,7 @@
 from dataclasses import asdict, dataclass
 from pathlib import Path
 import numpy as np
-from ..provenance import file_hash, runtime, write_json
+from ..provenance import file_hash, runtime, publish_checkpoint
 from ..data.registry import registry_hash
 
 IMPLEMENTATION_SHA256 = "aac5cda48b1e9130e89d3e3ee05099b2941a4ba6eb8d8068ec76da5f9316b5ae"
@@ -87,10 +87,9 @@ def save_checkpoint(directory, model, config, source_device, training=None):
 
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
-    weights = directory / "model.weights.h5"
     # A fresh inference wrapper shares graph weights but has no tracked optimizer.
     # This keeps portable weight artifacts independent of Adam's slot arrays.
-    tf.keras.Model(inputs=model.inputs, outputs=model.outputs).save_weights(weights)
+    inference = tf.keras.Model(inputs=model.inputs, outputs=model.outputs)
     metadata = {
         "schema_version": 1,
         "kind": "translation",
@@ -109,13 +108,10 @@ def save_checkpoint(directory, model, config, source_device, training=None):
         "parameters": int(model.count_params()),
         "class_registry_sha256": registry_hash(),
         "runtime": runtime("tensorflow"),
-        "weights": weights.name,
-        "weights_sha256": file_hash(weights),
         "training": training or {"status": "untrained_initialization"},
         "paper_reproduction_certified": False,
     }
-    write_json(directory / "metadata.json", metadata)
-    return metadata
+    return publish_checkpoint(directory, "model.weights.h5", inference.save_weights, metadata)
 
 
 def load_checkpoint(directory):

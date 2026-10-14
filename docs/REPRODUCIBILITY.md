@@ -6,7 +6,7 @@ The root package and data commands do not import TensorFlow or PyTorch. Each bac
 
 ## Artifacts
 
-A translation checkpoint contains `model.weights.h5` and `metadata.json`. Metadata specifies graph source hash, width/depth, four output names, full-resolution head, source/target devices, linear output policy, parameters, versions, class registry hash, and training provenance. A classifier checkpoint contains a tensor-only `model.pt` state dictionary and `metadata.json`, including q, filter width, shift profile, scaling contract, and class order identity. Reads verify hashes and load states strictly.
+A translation checkpoint contains `metadata.json` and the HDF5 weight file named by its `weights` field (ending in `.weights.h5`). Metadata specifies graph source hash, width/depth, the configured output names, full-resolution head, source/target devices, linear output policy, parameters, versions, class registry hash, and training provenance. A classifier checkpoint contains a tensor-only `.pt` state dictionary named by metadata and `metadata.json`, including q, filter width, shift profile, scaling contract, and class order identity. Reads verify hashes and load states strictly.
 
 `bundle` copies these artifacts into a self-contained directory with relative paths and a manifest. It requires all four portable translators unless `--allow-partial` is explicit. An untrained initialization requires `--allow-untrained`; demonstration status is retained. Bundles do not certify research accuracy.
 
@@ -46,8 +46,22 @@ The exact local evidence and remaining reproduction work are summarized in [IMPL
 
 ## Notebook run state
 
-The shared `Workflow` controller records immutable configuration snapshots, per-stage input signatures, output hashes, running/completed/failed states, and software version. It verifies the prepared split manifests and reconstructs original spectral row order before comparing source content hashes. Reopening a completed stage reuses verified artifacts; failed or changed stages require a new run. This is not optimizer resume. All six notebooks share this control surface.
+The shared `Workflow` controller records immutable configuration snapshots, per-stage input signatures, output hashes, running/completed/failed states, software version, and package-source hash. It verifies the prepared split manifests and reconstructs original spectral row order before comparing source content hashes. Reopening a completed stage reuses verified artifacts; failed or changed stages require a new run. This is not optimizer resume. All six notebooks share this control surface.
 
 ## Compatibility in version 0.2
 
 Canonical batches and compatible model weight states remain readable. Batch identities now bind Raman axes and acquisition groups as well as spectra, IDs, and labels. Older prediction artifacts without those bindings should be regenerated before evaluation. Workflow artifact reuse checks the software version and configuration/input signatures; it is not optimizer continuation. The public synthetic translator fixture checks the focused graph against the preserved original without requiring obsolete source trees.
+
+## Failure handling and compatibility in version 0.3
+
+NPZ outputs are serialized to temporary files on the destination filesystem, then published without overwriting a competing writer. Mutable JSON manifests/histories are replaced atomically. Local NTFS/ext4 hard links are used for no-clobber NPZ publication; unsupported filesystems fail without publishing the target. These contracts cover ordinary process exceptions and cancellation, not a certification of physical power-loss durability.
+
+Checkpoint saves first serialize weights, derive a SHA-256 filename, and publish metadata last. A serialization/metadata exception leaves the previous committed checkpoint readable. After a successful save the previous managed weight file is retired to bound disk use. A hard process kill can leave an unreferenced temporary or weight file; it cannot make a metadata/weight mismatch pass verification. Checkpoint directories support one writer and should not serve concurrent readers during training: create a copied bundle for inference. Existing version-0.2 fixed-name checkpoints remain readable. Consumers must follow `metadata["weights"]` rather than assuming a filename.
+
+Workflow initialization and stages share an exclusive lock. Live configuration snapshots are checked again before each stage, and reuse binds the current package source as well as version/configuration/inputs/outputs. Source edits during a worker invalidate its stage. A version-0.2 workflow should be preserved as historical output; choose a fresh run directory for version 0.3. This still does not resume optimizer state.
+
+Workers write full stdout/stderr to disk, and errors show a bounded tail with a log path. Interrupting a notebook stage marks it failed and sends termination to its POSIX process group, including cascade workers. Native Windows direct-worker cancellation is implemented, but Windows process-tree cancellation is not certified. A kernel termination or machine interruption can leave a stale lock; preserve the old run and select a new directory.
+
+Translation evaluation now verifies the producing input-file hash and the source/target/output policy, plus label/axis/group identities. Old translations without that provenance must be regenerated. Source/reference comparisons remain physically unpaired class-mean comparisons.
+
+The CPU constraints file pins only the two historically verified framework versions. It is not a complete environment lock and does not specify CUDA libraries. `python -m sersd2d_superraman doctor` identifies the current interpreter and installed package metadata without importing the frameworks. This pass did not repeat environment installation, model parity, notebook execution, or hardware tests.

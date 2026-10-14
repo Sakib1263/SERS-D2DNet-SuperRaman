@@ -106,7 +106,18 @@ def open_workflow(configuration="configs/workflow_demo.json"):
     import os
     from .workflow import Workflow
 
-    project = next((p for p in (Path.cwd(), *Path.cwd().parents) if (p / "pyproject.toml").is_file()), None)
+    import tomllib
+
+    project = None
+    for candidate in (Path.cwd(), *Path.cwd().parents):
+        manifest = candidate / "pyproject.toml"
+        if (
+            manifest.is_file()
+            and tomllib.loads(manifest.read_text(encoding="utf-8")).get("project", {}).get("name")
+            == "sersd2d-superraman"
+        ):
+            project = candidate
+            break
     if project is None:
         raise ValueError("Open the notebook within the cloned repository")
     configuration = Path(os.environ.get("SERS_WORKFLOW_CONFIG", configuration))

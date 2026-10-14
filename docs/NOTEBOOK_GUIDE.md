@@ -4,7 +4,7 @@
 
 Open [00_control_center.ipynb](../notebooks/00_control_center.ipynb) and select a Python kernel containing the installed package and its `notebooks` extra. The controls live in the Setup cell and the chosen JSON configuration. Every stage notebook reads that same file and opens the same `workflow.json`; stage outputs are shared.
 
-The checked-in notebook outputs show a synthetic demonstration. Rerunning uses the controls you select. Run the cells from top to bottom; do not edit computed artifacts manually.
+The checked-in notebooks contain no stale execution outputs. Running them uses the controls you select; the default configuration is a synthetic demonstration. Run the cells from top to bottom; do not edit computed artifacts manually.
 
 ## Controls
 
@@ -48,12 +48,12 @@ Full research training is a new experiment. It is not restoration of historical 
 
 ## Reopen and troubleshoot
 
-Reopen the same run through `Workflow(PROJECT, settings)`. A completed stage is reused only when its inputs, settings, and recorded output hashes match. Configuration snapshots are stored in the run directory. Edit the source configuration and choose a new run directory rather than modifying those snapshots.
+Reopen the same run through `Workflow(PROJECT, settings)`. A completed stage is reused only when its package-source hash, inputs, settings, and recorded output hashes match. Metadata-referenced checkpoint weights are included in that verification. Configuration snapshots are stored in the run directory. Edit the source configuration and choose a new run directory rather than modifying those snapshots.
 
-A failed or interrupted stage is recorded as such; its directory is retained. Inspect the reported worker error and start a new run after fixing the cause. The controller does not silently skip failed work or mix partly completed experiments.
+A failed or interrupted stage is recorded as such; its directory is retained. Inspect the reported worker error and its full file under `logs/` (training logs include one progress line per epoch), then start a new run after fixing the cause. Interrupting a stage marks it failed and terminates its worker group on Linux; a killed kernel can leave a lock, which also requires a fresh run directory. The controller does not silently skip failed work or mix partly completed experiments.
 
 If a framework is missing, install the notebook extra into the selected kernel environment. If TensorFlow cannot access CUDA, use `translation_device="cpu"`; this does not prevent a working PyTorch CUDA classifier. If `CONFIG` cannot be found, check that the notebook is opened within the repository. The Python API and CLI use the same model/artifact contracts as the notebook frontend.
 
 ## Maintainer regeneration
 
-`tools/build_notebooks.py` is the sole notebook source generator. Regenerate only when changing the specification, then run `tools/validate_notebooks.py`. Validation executes all six notebooks with one shared synthetic run, writes HTML/PNG previews under ignored `tmp/second_pass_notebooks/`, and retains the verified synthetic outputs in the notebooks. A research configuration must not be used for public notebook regeneration.
+`tools/build_notebooks.py` is the sole notebook source generator. Regenerate only when changing the specification, then run `tools/validate_notebooks.py`. Validation executes all six notebooks with one shared fresh synthetic run and writes executed copies and HTML/PNG previews under an ignored `tmp/notebook_validation_<timestamp>/` directory. Public notebook sources remain clean. The third pass did not repeat notebook execution; the second-pass evidence is historical. A research configuration must not be used for public notebook regeneration.

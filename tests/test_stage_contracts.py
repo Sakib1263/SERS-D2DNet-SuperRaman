@@ -94,7 +94,7 @@ def test_controller_reuse_checks_inputs_and_outputs(tmp_path, monkeypatch):
         artifact.write_text("produced")
         return subprocess.CompletedProcess(args[0], 0, "", "")
 
-    monkeypatch.setattr(subprocess, "run", worker)
+    monkeypatch.setattr("sersd2d_superraman.workflow.run_worker", worker)
     w._step("probe", ["inspect"], [artifact], [source])
     w._step("probe", ["inspect"], [artifact], [source])
     assert len(calls) == 1

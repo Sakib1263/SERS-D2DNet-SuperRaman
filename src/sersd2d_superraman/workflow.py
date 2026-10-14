@@ -6,11 +6,20 @@ CLI workers as terminal users and never substitutes demo data for missing resear
 
 from pathlib import Path
 import os
-import subprocess
 import sys
 from .data import DEVICES, SOURCE_DEVICES, load_batch
 from .data.splits import assert_disjoint
-from .provenance import array_hash, file_hash, fresh_directory, json_hash, read_json, write_json
+from .provenance import (
+    array_hash,
+    file_hash,
+    json_hash,
+    read_json,
+    write_json,
+    exclusive_lock,
+    implementation_identity,
+)
+from .workers import run_worker
+from .artifacts import checkpoint_metadata
 import numpy as np
 from . import __version__
 
@@ -75,14 +84,18 @@ def validate_prepared(directory):
         group_digest = None if restored_groups is None else array_hash(restored_groups)
         if group_digest != split["input"].get("groups_sha256"):
             raise ValueError(f"Prepared acquisition groups changed: {device}")
-    for i, first_role in enumerate(roles):
-        for second_role in roles[i + 1 :]:
-            for first_device in DEVICES:
-                for second_device in DEVICES:
-                    if first_device != second_device:
-                        assert_disjoint(
-                            batches[first_device, first_role], batches[second_device, second_role]
-                        )
+    # A union per role detects the same cross-device group intersections without
+    # rebuilding large ID/group sets for every device pair.
+    role_groups = {
+        role: set().union(
+            *(set(batches[d, role].groups) if batches[d, role].groups is not None else set() for d in DEVICES)
+        )
+        for role in roles
+    }
+    for i, role in enumerate(roles):
+        for other in roles[i + 1 :]:
+            if role_groups[role] & role_groups[other]:
+                raise ValueError("Acquisition group overlap between split roles")
     return counts
 
 
@@ -96,6 +109,10 @@ class Workflow:
     def __init__(self, project, configuration):
         self.project = Path(project).resolve()
         config = read_json(configuration) if isinstance(configuration, (str, Path)) else dict(configuration)
+        if not isinstance(config, dict):
+            raise ValueError("Workflow configuration must be a JSON object")
+        if not isinstance(config.get("run_directory"), str) or not config["run_directory"].strip():
+            raise ValueError("run_directory must be a nonempty path")
         required = {
             "schema_version",
             "mode",
@@ -129,32 +146,51 @@ class Workflow:
                 raise ValueError("Research mode requires exactly one dataset or prepared_data path")
         if config["mode"] == "demo" and (config.get("dataset") or config.get("prepared_data")):
             raise ValueError("Demo mode uses generated synthetic inputs only")
+        import re
+
+        if not isinstance(config["classifier_device"], str) or not re.fullmatch(
+            r"cpu|cuda(?::[0-9]+)?", config["classifier_device"]
+        ):
+            raise ValueError("classifier_device must be cpu, cuda, or cuda:<index>")
+        if any(
+            not isinstance(config[k][section], dict)
+            for k in ("classifier_config", "translation_config")
+            for section in ("model", "training")
+        ):
+            raise ValueError("Model and training configurations must be objects")
         self.config = config
         self.output = self.resolve(config["run_directory"])
         self.state_path = self.output / "workflow.json"
-        digest = json_hash(config)
-        if self.state_path.exists():
-            self.state = read_json(self.state_path)
-            if (
-                self.state.get("configuration_sha256") != digest
-                or json_hash(self.state.get("configuration")) != digest
-            ):
-                raise ValueError("Configuration changed for this run. Select a new run_directory.")
-            for role in ("classifier", "translation"):
-                if read_json(self.output / f"{role}_config.json") != config[f"{role}_config"]:
-                    raise ValueError("Configuration snapshot changed; select a new run_directory")
-        else:
-            fresh_directory(self.output)
-            self.state = {
-                "schema_version": 1,
-                "configuration": config,
-                "configuration_sha256": digest,
-                "steps": {},
-                "paper_reproduction_certified": False,
-            }
-            write_json(self.state_path, self.state)
-            for role in ("classifier", "translation"):
-                write_json(self.output / f"{role}_config.json", config[f"{role}_config"])
+        self.output.mkdir(parents=True, exist_ok=True)
+        with exclusive_lock(self.output / "workflow.lock"):
+            if self.state_path.exists():
+                self.state = read_json(self.state_path)
+                self._check_configuration()
+            else:
+                if any(p.name != "workflow.lock" for p in self.output.iterdir()):
+                    raise ValueError("Output directory is nonempty; select a new run_directory")
+                self.state = {
+                    "schema_version": 1,
+                    "configuration": config,
+                    "configuration_sha256": json_hash(config),
+                    "steps": {},
+                    "paper_reproduction_certified": False,
+                }
+                # Publish workflow.json last: incomplete initialization cannot be reopened.
+                for role in ("classifier", "translation"):
+                    write_json(self.output / f"{role}_config.json", config[f"{role}_config"])
+                write_json(self.state_path, self.state)
+
+    def _check_configuration(self):
+        digest = json_hash(self.config)
+        if (
+            self.state.get("configuration_sha256") != digest
+            or json_hash(self.state.get("configuration")) != digest
+        ):
+            raise ValueError("Configuration changed for this run. Select a new run_directory.")
+        for role in ("classifier", "translation"):
+            if read_json(self.output / f"{role}_config.json") != self.config[f"{role}_config"]:
+                raise ValueError("Configuration snapshot changed; select a new run_directory")
 
     def resolve(self, value):
         path = Path(value).expanduser()
@@ -173,27 +209,18 @@ class Workflow:
         return self.output / "bundle/bundle.json"
 
     def _step(self, key, arguments, outputs, inputs=()):
-        # A shared lock prevents concurrent notebooks from losing each other's run state.
-        lock = self.output / "workflow.lock"
-        try:
-            descriptor = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-        except FileExistsError as error:
-            raise ValueError(
-                "Another stage is running or interrupted; wait or select a new run directory"
-            ) from error
-        try:
-            with os.fdopen(descriptor, "w") as stream:
-                stream.write(str(os.getpid()))
+        with exclusive_lock(self.output / "workflow.lock"):
             self.state = read_json(self.state_path)
+            self._check_configuration()
             return self._execute_step(key, arguments, outputs, inputs)
-        finally:
-            lock.unlink(missing_ok=True)
 
     def _execute_step(self, key, arguments, outputs, inputs=()):
         outputs = [Path(p).resolve() for p in outputs]
+        implementation = implementation_identity()
         signature = json_hash(
             {
                 "software_version": __version__,
+                "implementation_sha256": implementation,
                 "arguments": list(map(str, arguments)),
                 "inputs": {str(Path(p).resolve()): file_hash(p) for p in inputs},
             }
@@ -204,10 +231,13 @@ class Workflow:
                 raise ValueError(
                     f"Stage {key} previously failed or was interrupted. Inspect it and start a new run."
                 )
-            if existing["signature"] != signature or set(existing["outputs"]) != set(map(str, outputs)):
+            if existing["signature"] != signature or set(
+                existing.get("declared_outputs", existing["outputs"])
+            ) != set(map(str, outputs)):
                 raise ValueError(f"Inputs or parameters changed for completed stage {key}; start a new run")
-            for p in outputs:
-                if file_hash(p) != existing["outputs"][str(p)]:
+            for name, digest in existing["outputs"].items():
+                p = Path(name)
+                if file_hash(p) != digest:
                     raise ValueError(f"Completed stage artifact changed: {p.name}")
             print(f"{key}: verified existing artifacts")
             return
@@ -216,27 +246,36 @@ class Workflow:
         env = os.environ.copy()
         env.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
         env["PYTHONDONTWRITEBYTECODE"] = "1"
+        env["PYTHONUTF8"] = "1"
+        env["PYTHONUNBUFFERED"] = "1"
         env["PYTHONPATH"] = str(self.project / "src") + os.pathsep + env.get("PYTHONPATH", "")
         if arguments[0] == "train-translation" and self.config["translation_device"] == "cpu":
             env["CUDA_VISIBLE_DEVICES"] = "-1"
         try:
-            result = subprocess.run(
+            log_path = self.output / "logs" / f"{key.replace(':', '_')}.log"
+            run_worker(
                 [sys.executable, "-m", "sersd2d_superraman", *map(str, arguments)],
+                log_path,
                 cwd=self.project,
                 env=env,
-                capture_output=True,
-                text=True,
             )
-            if result.returncode:
-                raise RuntimeError(f"{key} failed:\n{result.stderr[-6000:]}")
+            if implementation_identity() != implementation:
+                raise ValueError("Package source changed while the stage was running; start a new run")
+            committed_outputs = list(outputs)
+            for p in outputs:
+                if p.name == "metadata.json" and p.parent.name == "checkpoint":
+                    committed_outputs.append(p.parent / checkpoint_metadata(p.parent)["weights"])
             record = {
                 "status": "completed",
                 "signature": signature,
-                "outputs": {str(p): file_hash(p) for p in outputs},
+                "declared_outputs": list(map(str, outputs)),
+                "implementation_sha256": implementation,
+                "log": str(log_path),
+                "outputs": {str(p): file_hash(p) for p in committed_outputs},
             }
             self.state["steps"][key] = record
             print(f"{key}: completed")
-        except Exception as error:
+        except BaseException as error:
             self.state["steps"][key] = {"status": "failed", "signature": signature, "error": str(error)}
             raise
         finally:
@@ -302,7 +341,6 @@ class Workflow:
                     output / "run.json",
                     output / "history.json",
                     output / "checkpoint/metadata.json",
-                    output / "checkpoint/model.weights.h5",
                 ],
                 [config, *inputs],
             )
@@ -333,7 +371,6 @@ class Workflow:
                 output / "run.json",
                 output / "history.json",
                 output / "checkpoint/metadata.json",
-                output / "checkpoint/model.pt",
             ],
             [config, *inputs],
         )
@@ -344,11 +381,11 @@ class Workflow:
 
         classifier = self.output / "classification/checkpoint"
         args = ["bundle", "--classifier", classifier, "--output", self.output / "bundle"]
-        inputs = [classifier / "metadata.json", classifier / "model.pt"]
+        inputs = [classifier / "metadata.json", classifier / checkpoint_metadata(classifier)["weights"]]
         for device in self.config["sources"]:
             checkpoint = self.output / "translation" / device / "checkpoint"
             args += ["--translator", f"{device}={checkpoint}"]
-            inputs += [checkpoint / "metadata.json", checkpoint / "model.weights.h5"]
+            inputs += [checkpoint / "metadata.json", checkpoint / checkpoint_metadata(checkpoint)["weights"]]
         if set(self.config["sources"]) != set(SOURCE_DEVICES):
             args += ["--allow-partial"]
         self._step("bundle", args, [self.bundle], inputs)

@@ -1,0 +1,5 @@
+# Historically verified framework versions, not a complete dependency lock.
+# Install the PyTorch CPU wheel first using the official CPU index (README).
+# Do not apply this profile to an existing GPU environment.
+tensorflow==2.21.0
+torch==2.6.0

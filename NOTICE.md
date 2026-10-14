@@ -2,9 +2,11 @@
 
 This repository accompanies the SERS standardization paper by Sakib Mahmud, Faizul Rakib Sayem, Manal Hassan, Yanjun Yang, Muhammad E. H. Chowdhury, Susu M. Zughaier, Faycal Bensaali, and Yiping Zhao. DOI: [10.1016/j.saa.2025.126931](https://doi.org/10.1016/j.saa.2025.126931).
 
-The translator's `translation/architecture.py` is a focused extraction of the author-supplied `MLMRSNet.IMUNet` graph, whose header names Sakib Mahmud and MIT licensing. Three inactive model builders were removed; active operations and weight shapes are retained and parity-tested against the original. Its SHA-256 is `9026c64849b1d27f171d69121684c00a3515eed2e8c175cca4d9d9bb94a19878`. The original copy remains in external recovery storage. Checkpoint metadata records its source hash and the separate focused-implementation hash.
+The translator's `translation/architecture.py` is a focused extraction of the author-supplied `MLMRSNet.IMUNet` graph, whose header names Sakib Mahmud and MIT licensing. Three inactive model builders were removed; active operations and weight shapes are retained and parity-tested against the original. The original full source SHA-256 is `9026c64849b1d27f171d69121684c00a3515eed2e8c175cca4d9d9bb94a19878`. The original copy remains in external recovery storage. Checkpoint metadata records its source hash and the separate focused-implementation hash.
 
 The classifier is a new, focused implementation of the supplied model's tensor/state contract. It preserves power-major polynomial expansion, shared two-coordinate legacy sampling, spectral-axis concatenation, and layer state names. A separately named bounded 1D shift profile changes the legacy sampling behavior. It does not claim invention of the underlying operational neuron mechanisms or interchangeability with a newer SuperONN library.
+
+The complete bibliography and each reference's role are listed in [docs/REFERENCES.md](docs/REFERENCES.md).
 
 ## Core operator references
 

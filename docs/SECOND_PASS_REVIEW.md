@@ -1,4 +1,4 @@
-# Comprehensive second-pass review
+# Version 0.2 implementation review
 
 Version 0.2.0, 15 October 2026. This pass reviews the active primary workflow against the paper, recovered sources, model contracts, notebook behavior, and release boundaries. It improves scientific transparency and software usability; it does not certify published-result reproduction.
 
@@ -20,7 +20,6 @@ Version 0.2.0, 15 October 2026. This pass reviews the active primary workflow ag
 | Translator sampling cap obscured actual sample counts | Fit counts and whether 50 pairs/class was achieved are recorded explicitly |
 | Broad translator source included inactive model builders | Removed three inactive builders; remaining active graph is checked against original weights/outputs |
 | Already-translated input could be transformed twice | Reject it in translation/cascade; use classification directly |
-| Already-translated input could be transformed twice | Reject it in translation/cascade; use classification directly |
 | One-time author-local audit tools in public tree | Retired to external recovery storage; reusable tests/build/validation tools retained |
 
 ## Cleanup and preservation
@@ -37,6 +36,6 @@ The parameter-count difference cannot be resolved by arbitrarily narrowing the r
 
 ## Verification and remaining work
 
-Current executed checks are recorded in [VERIFICATION.json](VERIFICATION.json). They include contract/regression tests, six shared-workflow notebooks, original-graph parity, all-four-device synthetic cascade, real prepared-data validation, and built-artifact integrity checks.
+Checks executed for version 0.2 are recorded in [VERIFICATION.json](VERIFICATION.json). They include contract/regression tests, six shared-workflow notebooks, original-graph parity, all-four-device synthetic cascade, real prepared-data validation, and built-artifact integrity checks.
 
 Full width-128 research fitting, independent efficacy assessment, recovered paper checkpoint parity, raw preprocessing recovery, and edge-device performance remain scientific work. SHAP, paper baselines, chemistry holdouts, joint training, and new operator substitutions are separate extensions. GitHub publication and remote CI status are independent of local checks.

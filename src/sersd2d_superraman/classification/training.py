@@ -126,6 +126,12 @@ def train_classifier(train, validation, output, model_config=None, training_conf
             "validation_accuracy": results[1][1],
             "learning_rate": float(optimizer.param_groups[0]["lr"]),
         }
+        print(
+            f"SuperRaman epoch {epoch}/{config.epochs}: "
+            f"train_ce={row['train_loss']:.6g}, val_ce={row['validation_loss']:.6g}, "
+            f"val_accuracy={row['validation_accuracy']:.4f}, lr={row['learning_rate']:.3g}",
+            flush=True,
+        )
         history.append(row)
         scheduler.step(row["validation_loss"])
         if row["validation_loss"] < best:

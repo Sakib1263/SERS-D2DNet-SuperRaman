@@ -141,6 +141,12 @@ def train_translation(
             "validation_out_mae": score,
             "learning_rate": float(model.optimizer.learning_rate.numpy()),
         }
+        print(
+            f"SERS-D2DNet[{source_train.source_device}] epoch {epoch}/{config.epochs}: "
+            f"train_weighted_mae={row['train_loss']:.6g}, "
+            f"val_out_mae={score:.6g}, lr={row['learning_rate']:.3g}",
+            flush=True,
+        )
         history.append(row)
         if score < best:
             best, stale, plateau = score, 0, 0

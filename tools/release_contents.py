@@ -13,6 +13,7 @@ TOP = (
     "NOTICE.md",
     "CITATION.cff",
     "CHANGELOG.md",
+    "CONTRIBUTING.md",
     "pyproject.toml",
     "MANIFEST.in",
     ".gitignore",
@@ -28,6 +29,9 @@ DOCS = (
     "VERIFICATION.json",
     "NOTEBOOK_GUIDE.md",
     "SECOND_PASS_REVIEW.md",
+    "THIRD_PASS_REVIEW.md",
+    "THIRD_PASS_VERIFICATION.json",
+    "REFERENCES.md",
     "paper_contract.json",
 )
 
@@ -41,7 +45,7 @@ def public_files():
     for folder, suffixes in {
         "src": (".py",),
         "tests": (".py", ".json", ".npz"),
-        "configs": (".json",),
+        "configs": (".json", ".txt"),
         "notebooks": (".ipynb",),
         "tools": (".py", ".txt"),
         "examples": (".py", ".md"),
@@ -59,21 +63,16 @@ def public_files():
 def main():
     import tomllib
 
-    version = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"]
+    version = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
     dist = ROOT / "dist"
     dist.mkdir(exist_ok=True)
     prefix = f"SERS-D2DNet-SuperRaman-{version}"
     archive = dist / f"{prefix}-github-source.zip"
     paths = public_files()
-    with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as z:
-        for p in paths:
-            z.write(p, f"{prefix}/{p.relative_to(ROOT).as_posix()}")
-    with zipfile.ZipFile(archive) as z:
-        for p in paths:
-            name = f"{prefix}/{p.relative_to(ROOT).as_posix()}"
-            if z.read(name) != p.read_bytes():
-                raise ValueError(f"Source ZIP mismatch: {name}")
-    wheel = next(dist.glob(f"sersd2d_superraman-{version}-*.whl"))
+    candidates = sorted(dist.glob(f"sersd2d_superraman-{version}-*.whl"))
+    if len(candidates) != 1:
+        raise ValueError(f"Expected one current wheel; found {len(candidates)}. Build into a clean dist/.")
+    wheel = candidates[0]
     with zipfile.ZipFile(wheel) as z:
         for p in (ROOT / "src/sersd2d_superraman").rglob("*.py"):
             if (
@@ -83,9 +82,19 @@ def main():
                 raise ValueError(f"Wheel/source mismatch: {p.name}")
         if any("prismsers" in name or "SuperRamanNet/" in name for name in z.namelist()):
             raise ValueError("Wheel contains a legacy/neighbor dependency")
-    sdist = next(dist.glob(f"sersd2d_superraman-{version}.tar.gz"))
+    sdist = dist / f"sersd2d_superraman-{version}.tar.gz"
+    if not sdist.is_file():
+        raise ValueError("Current source distribution missing; run python -m build first")
     with tarfile.open(sdist) as t:
         names = t.getnames()
+        for p in paths:
+            matches = [
+                m for m in t.getmembers() if m.name.partition("/")[2] == p.relative_to(ROOT).as_posix()
+            ]
+            if len(matches) != 1 or not matches[0].isfile():
+                raise ValueError(f"Source distribution missing public file: {p.relative_to(ROOT)}")
+            if t.extractfile(matches[0]).read() != p.read_bytes():
+                raise ValueError(f"Source distribution content mismatch: {p.relative_to(ROOT)}")
         if any(
             "/SERSD2DNet/" in name
             or "/SuperRamanNet/" in name
@@ -95,6 +104,14 @@ def main():
             for name in names
         ):
             raise ValueError("Source distribution includes private research artifacts")
+    with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as z:
+        for p in paths:
+            z.write(p, f"{prefix}/{p.relative_to(ROOT).as_posix()}")
+    with zipfile.ZipFile(archive) as z:
+        for p in paths:
+            name = f"{prefix}/{p.relative_to(ROOT).as_posix()}"
+            if z.read(name) != p.read_bytes():
+                raise ValueError(f"Source ZIP mismatch: {name}")
     manifest = {
         "version": version,
         "public_source_files": len(paths),
@@ -105,7 +122,7 @@ def main():
             for p in (archive, wheel, sdist)
         ],
     }
-    (dist / "release_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    (dist / "release_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print(
         json.dumps(
             {

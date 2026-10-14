@@ -68,5 +68,6 @@
       "maintained": "not claimed; fresh full experiments and measurements required",
       "alignment": "unverified"
     }
-  ]
+  ],
+  "scope_note": "Scientific mapping retained from the version-0.2 audit; version 0.3 changes workflow reliability and documentation without claiming new scientific validation."
 }

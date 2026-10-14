@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "Cite the associated paper and record this software version and checkpoint hashes."
 title: "SERS-D2DNet and SuperRaman research pipeline"
-version: 0.2.0
+version: 0.3.0
 date-released: 2026-10-15
 type: software
 repository-code: https://github.com/Sakib1263/SERS-D2DNet-SuperRaman

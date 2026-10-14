@@ -74,7 +74,9 @@ def test_checkpoint_batch_parity_hash_and_portable_bundle(tmp_path):
     )
     meta, _ = verify_bundle(bundle)
     assert meta["contains_untrained_models"]
-    with (tmp_path / "ckpt/model.pt").open("ab") as stream:
+    from sersd2d_superraman.provenance import read_json
+
+    with (tmp_path / "ckpt" / read_json(tmp_path / "ckpt/metadata.json")["weights"]).open("ab") as stream:
         stream.write(b"changed")
     with pytest.raises(ValueError, match="hash"):
         load_checkpoint(tmp_path / "ckpt")

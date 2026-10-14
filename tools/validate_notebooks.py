@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import base64
+from datetime import datetime, timezone
 import json
 import os
 import sys
@@ -14,8 +15,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
-    output = ROOT / "tmp/second_pass_notebooks"
-    output.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S_%fZ")
+    output = ROOT / "tmp" / f"notebook_validation_{stamp}"
+    output.mkdir(parents=True, exist_ok=False)
     records = []
     for path in sorted((ROOT / "notebooks").glob("*.ipynb")):
         book = nbformat.read(path, as_version=4)
@@ -34,8 +36,7 @@ def main():
             if manager.has_kernel:
                 manager.shutdown_kernel(now=True)
         nbformat.write(book, output / path.name)
-        # Published notebooks retain verified synthetic outputs for immediate review.
-        nbformat.write(book, path)
+        # Keep public notebook sources clean; executed copies remain in this run.
         html, _ = HTMLExporter().from_notebook_node(book)
         (output / path.with_suffix(".html").name).write_text(html, encoding="utf-8")
         images = []

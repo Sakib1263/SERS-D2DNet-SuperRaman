@@ -24,4 +24,4 @@ Fit: cross-entropy on logits, reusable classifier trained on Renishaw. Selection
 
 A complete bundle contains four translators and one reusable classifier with hashes and class mapping identities. A partial bundle declares supported devices. The runner preserves source sample order, retains translations, and saves both original and translated classifier outputs. No sample labels are needed at inference. Renishaw bypasses translation.
 
-The demonstration bundle is trained on synthetic data for one epoch with a narrow translator. Its accuracy has no biological meaning. A research bundle needs authorized data, independent evaluation, and checkpoint-specific provenance. No pretrained scientific bundle is distributed in 0.2.0.
+The demonstration bundle is trained on synthetic data for one epoch with a narrow translator. Its accuracy has no biological meaning. A research bundle needs authorized data, independent evaluation, and checkpoint-specific provenance. No pretrained scientific bundle is distributed in this release.
