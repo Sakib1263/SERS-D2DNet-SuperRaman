@@ -1,0 +1,6 @@
+{
+  "model": {"depth": 3, "width": 128},
+  "training": {"epochs": 300, "batch_size": 16, "learning_rate": 0.0005,
+    "early_stopping_patience": 30, "plateau_patience": 15, "lr_factor": 0.1,
+    "minimum_learning_rate": 0.0000001, "samples_per_class": 50, "seed": 37}
+}

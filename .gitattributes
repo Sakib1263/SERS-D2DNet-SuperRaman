@@ -1,0 +1,7 @@
+* text=auto
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.npz binary
+src/sersd2d_superraman/translation/_legacy_mlmrsnet.py -text

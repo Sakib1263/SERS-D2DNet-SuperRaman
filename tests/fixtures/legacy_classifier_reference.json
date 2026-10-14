@@ -1,0 +1,8 @@
+{
+  "scope": "synthetic initialization; not pretrained research weights",
+  "seed": 37,
+  "original_models_utils_sha256": "c6cf9366ab9313849962bd5f8cae8a83aed0b2cc7c69173378400a14bbcd80d0",
+  "original_SelfONN_sha256": "692c6c7ebf2d70db18f89bfd71d1078870dbbf0762576265c04b429a2e0ac57e",
+  "torch": "2.6.0+cu126",
+  "parameter_count": 448572
+}

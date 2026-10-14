@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "Cite the associated paper and record this software version and checkpoint hashes."
+title: "SERS-D2DNet and SuperRaman research pipeline"
+version: 0.1.0
+date-released: 2026-10-14
+type: software
+license: MIT
+authors:
+  - family-names: Mahmud
+    given-names: Sakib
+preferred-citation:
+  type: article
+  title: "Deep learning-based cross-device standardization of surface-enhanced Raman spectroscopy for enhanced bacterial recognition"
+  authors:
+    - {family-names: Mahmud, given-names: Sakib}
+    - {family-names: Sayem, given-names: Faizul Rakib}
+    - {family-names: Hassan, given-names: Manal}
+    - {family-names: Yang, given-names: Yanjun}
+    - {family-names: Chowdhury, given-names: Muhammad E. H.}
+    - {family-names: Zughaier, given-names: Susu M.}
+    - {family-names: Bensaali, given-names: Faycal}
+    - {family-names: Zhao, given-names: Yiping}
+  journal: "Spectrochimica Acta Part A: Molecular and Biomolecular Spectroscopy"
+  volume: "347"
+  year: 2026
+  start: "126931"
+  doi: 10.1016/j.saa.2025.126931
