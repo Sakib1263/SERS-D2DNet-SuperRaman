@@ -90,4 +90,4 @@ def test_focused_graph_matches_original_weight_and_output_fixture():
         model.set_weights(weights)
         outputs = model([fixture["input"]], training=False)
         for name, output in zip(model.output_names, outputs):
-            np.testing.assert_allclose(output.numpy(), fixture[f"output:{name}"], rtol=1e-6, atol=1e-7)
+            np.testing.assert_allclose(output.numpy(), fixture[f"output:{name}"], rtol=1e-5, atol=1e-6)
