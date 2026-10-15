@@ -1,6 +1,12 @@
 # Implementation and release status
 
-15 October 2026 · Version 0.3.0 research beta. The third pass reviews failure handling, source-aware artifact reuse, efficiency, first-run usability, bibliography, and repository hygiene. New evidence is in [THIRD_PASS_VERIFICATION.json](THIRD_PASS_VERIFICATION.json); [VERIFICATION.json](VERIFICATION.json) preserves version-0.2 results without rerunning them. Exact agreement with the paper and reproduction of its published results remain unresolved.
+15 October 2026 · Version 0.3.1 research beta. Dataset access, citation, and local-input guidance now refer to the restricted [Zenodo record](https://zenodo.org/records/23372983). Version-0.3.0 reliability evidence is retained with its original scope. Version 0.3.0 reviewed failure handling, source-aware artifact reuse, efficiency, first-run usability, bibliography, and repository hygiene. New evidence is in [THIRD_PASS_VERIFICATION.json](THIRD_PASS_VERIFICATION.json); [VERIFICATION.json](VERIFICATION.json) preserves version-0.2 results without rerunning them. Exact agreement with the paper and reproduction of its published results remain unresolved.
+
+## Dataset access update (version 0.3.1)
+
+The public Zenodo record and API identify **Multi-Instrument SERS Dataset**, version **1.0.0**, DOI **10.5281/zenodo.23372983**, with restricted files and a record-listed CC BY 4.0 license. The README, data guide, bibliography, citation metadata, notebook access notes, package URL, and offline `dataset-info` command now share this entry point. Reasonable access requests are reviewed by the curator. The pipeline uses approved local files.
+
+Thirteen new offline checks passed for dataset discovery, missing inputs, archive extraction guidance, canonical-device coverage, and research input configuration. No earlier model, notebook-execution, real-data, hardware, installation, or release-build tests were repeated for this metadata/usability update. Restricted file contents and checksums were not inspected. Version-0.3.0 verification records retain their original scope.
 
 ## Historical second-pass checks (version 0.2; not repeated)
 

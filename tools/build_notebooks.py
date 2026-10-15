@@ -51,6 +51,9 @@ def write(name, title, goal, cells):
             md(
                 "### Read the execution scope\nThe demo verifies software behavior. Its plots and scores are synthetic and have no scientific performance interpretation. Research mode uses authorized preprocessed arrays and the recovered width-128 graph. Published-result reproduction remains unresolved; review the paper alignment document before reporting results."
             ),
+            md(
+                "## Dataset access\nThe [Multi-Instrument SERS Dataset](https://zenodo.org/records/23372983) is hosted on Zenodo with restricted file access. Request access with a brief intended-use statement. After approval, download/extract the files and follow the [local data setup guide](../docs/DATA.md). The synthetic demo requires no dataset access. In a terminal, `sers-pipeline dataset-info` shows the access and configuration steps."
+            ),
             *cells,
             md(
                 "## Checks\nArtifact reuse checks package-source and file hashes plus input/configuration identities. Full worker logs are stored under the run directory in logs/. Test rows are evaluated after checkpoint selection; they do not choose the models."

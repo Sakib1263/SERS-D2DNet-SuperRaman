@@ -1,6 +1,39 @@
 # Data contract and access
 
-The paper states that data are available on request. This release does not distribute research spectra, paper model weights, or historical saliency outputs. The demonstration data and both model-compatibility fixtures are synthetic and marked accordingly.
+The **[Multi-Instrument SERS Dataset](https://zenodo.org/records/23372983)** is hosted on Zenodo with restricted file access. The public record identifies Sakib Mahmud as the creator, version **1.0.0**, DOI **[10.5281/zenodo.23372983](https://doi.org/10.5281/zenodo.23372983)**, and a CC BY 4.0 license. Access is granted following curator review of a reasonable request. Research files, paper-trained weights, and historical saliency outputs are not bundled with this software. The demonstration data and both model-compatibility fixtures are synthetic.
+
+## Request access and configure local data
+
+1. Open the Zenodo record and sign in. Request access with a brief intended-use statement and your affiliation, if applicable.
+2. After approval, download the files. Extract an archive locally before selecting it as a pipeline input.
+3. Copy `configs/workflow_research.json` to ignored `configs/local/my_run.json` and set exactly one of `dataset` and `prepared_data`.
+4. For a downloaded preprocessed HDF5 file, remove the template's `prepared_data` entry and add `dataset` with the actual local filename. A directory containing all five canonical NPZ files can also be used as `dataset`.
+5. Use `prepared_data` only for a study already produced by `prepare`, containing `study.json` and the device-specific split files. Choose a fresh `run_directory`, open the notebook control center, and select your local configuration.
+
+For example, after placing the approved preprocessed HDF5 file under `data/private/`, replace the template's input setting with the following entry, using its actual filename:
+
+```json
+"dataset": "data/private/<downloaded-file>.h5"
+```
+
+This is a single configuration entry, not a complete configuration file. Do not keep `prepared_data` alongside it. Paths resolve from the repository root; WSL users should use Linux paths. Downloaded data should remain under ignored `data/` or outside the checkout.
+
+The notebook controller prepares independent split roles when `dataset` is selected. To prepare them separately from a terminal:
+
+```bash
+sers-pipeline dataset-info
+sers-pipeline prepare --dataset "data/private/<downloaded-file>.h5" --output data/prepared
+```
+
+After this command succeeds, select `"prepared_data": "data/prepared"` in a fresh research run. An existing `data/prepared` directory must not be overwritten. For canonical NPZ input, the directory must contain `Renishaw.npz`, `Enwave.npz`, `Tec5.npz`, `Fdefender.npz`, and `RID.npz`. File access is handled through Zenodo; the pipeline reads approved local files and requires no embedded access token.
+
+## Dataset citation and file identity
+
+**Mahmud, S. (2026). Multi-Instrument SERS Dataset (Version 1.0.0) [Data set]. Zenodo. [10.5281/zenodo.23372983](https://doi.org/10.5281/zenodo.23372983).** Cite this dataset together with the associated paper. The dataset's record-listed license and access conditions are separate from the software's MIT license; consult the record and supplied files for current terms.
+
+The public metadata was checked on 15 October 2026. Restricted file contents and checksums were not available for inspection. The historical HDF5 identity below describes the author-supplied local file inspected earlier; it does not certify that a downloaded archive or later dataset version has the same bytes. The loader records the actual input-file hash for each preparation.
+
+## Preprocessed HDF5 contract
 
 The inspected original HDF5 has SHA-256 `53c5375fe0e90d19abe50e6c091ee891d4cbfc7edc401080c0f43fbc6407d443`, 29,545 spectra, and the five root-key device arrays described below. Each spectral array has shape `[N,1400]`, float64 storage, finite values, and range [0,1]. Labels are integer IDs 0-19. These properties were recorded during the earlier data audit and were not rechecked for version 0.3. Acquisition, sample, and substrate groups and a physical Raman axis are not stored in that file.
 

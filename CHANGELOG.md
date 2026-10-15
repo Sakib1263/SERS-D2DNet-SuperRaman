@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 - 2026-10-15
+
+- Documented the restricted-access Zenodo dataset, versioned DOI, request process, dataset citation, and local research setup.
+- Added offline `dataset-info` guidance and linked dataset information from environment diagnostics and package metadata.
+- Check downloaded/prepared input paths before launching preparation workers; actionable errors explain access requests, archive extraction, and the two input configuration modes.
+- Added dataset access links to every notebook without changing computational cells or executing training.
+
 ## 0.3.0 - 2026-10-15
 
 - Atomic no-clobber array publication and content-addressed checkpoint weights with metadata committed last.

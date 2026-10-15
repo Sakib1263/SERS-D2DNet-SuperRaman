@@ -3,7 +3,8 @@
 **Cross-device SERS standardization followed by 20-analyte classification**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Research beta](https://img.shields.io/badge/Release-0.3.0_research_beta-176B87)](CHANGELOG.md)
+[![Dataset: restricted access](https://img.shields.io/badge/Dataset-restricted_access-8A5A00)](https://zenodo.org/records/23372983)
+[![Research beta](https://img.shields.io/badge/Release-0.3.1_research_beta-176B87)](CHANGELOG.md)
 
 Research software accompanying **Deep learning-based cross-device standardization of surface-enhanced Raman spectroscopy for enhanced bacterial recognition**, Sakib Mahmud and colleagues, *Spectrochimica Acta Part A: Molecular and Biomolecular Spectroscopy* **347** (2026), 126931. [Paper and DOI](https://doi.org/10.1016/j.saa.2025.126931).
 
@@ -32,6 +33,24 @@ In VS Code, select `.venv` as the notebook kernel. On native Windows, replace th
 Leave `CONFIG = "configs/workflow_demo.json"` and choose **Run All**. The demo generates synthetic data, trains four width-2 translators and one classifier for one epoch on CPU, creates a bundle, and evaluates 20 held-out synthetic rows per portable device. Results appear below the controls and under `output/notebooks/demo/`. Demo scores have no scientific performance interpretation. Notebook outputs are cleared in Git so a new run starts with your own visible results.
 
 The constraints file selects TensorFlow **2.21.0** and PyTorch **2.6.0**. It is not a complete dependency lock or a GPU environment specification. To preserve an existing GPU environment, use a separate environment inheriting its packages and install the project with `--no-deps`; see [reproducibility](docs/REPRODUCIBILITY.md). For stage-only use, install `.[translation]` or `.[classification]`. The base package imports neither framework. `doctor` reads installed package metadata; it does not initialize GPUs or certify binary compatibility.
+
+## Dataset and access
+
+The **[Multi-Instrument SERS Dataset](https://zenodo.org/records/23372983)** is archived on Zenodo as version **1.0.0**, DOI **[10.5281/zenodo.23372983](https://doi.org/10.5281/zenodo.23372983)**. It contains 29,545 SERS spectra across five instruments and 20 analyte classes. **The record is public; access to its files is restricted.**
+
+Access is available following curator review of a reasonable request. Open the Zenodo record, sign in, and request access with a brief explanation of the intended use and your affiliation, if applicable. After approval, download the files and extract any archive locally. Research files are not included in this Git repository; the synthetic quick start works without dataset access.
+
+To use the downloaded data, copy `configs/workflow_research.json` to `configs/local/my_run.json` and choose **one** input setting:
+
+| Local input | Configuration |
+|---|---|
+| Downloaded preprocessed HDF5 file | Replace `prepared_data` with `"dataset": "data/private/<downloaded-file>.h5"` using the actual filename |
+| Five canonical device NPZ files | Replace `prepared_data` with `"dataset": "data/private/canonical"` |
+| Existing prepared split study | Keep `"prepared_data": "data/prepared"` |
+
+Paths are relative to the repository root unless absolute. Use a fresh `run_directory`, select your local configuration in the notebooks, and review the controls before enabling research training. Keep downloaded data under ignored `data/` or outside the checkout. Run `sers-pipeline dataset-info` for access guidance from the terminal. [Complete data and preparation guide](docs/DATA.md).
+
+The Zenodo record lists **CC BY 4.0** for the dataset; file access remains subject to curator approval. The software uses the separate [MIT license](LICENSE). Cite the dataset DOI and the associated paper when using the data. Trained paper weights are not supplied with this software.
 
 ## How the pipeline works
 
@@ -69,7 +88,7 @@ Select one JSON file with `CONFIG` in every notebook. `sources` chooses devices;
 
 ## Run a real experiment
 
-1. Obtain authorized preprocessed data. Research data and trained weights are not distributed here.
+1. [Request dataset access on Zenodo](https://zenodo.org/records/23372983), then download and extract the approved files as described in [Dataset and access](#dataset-and-access).
 2. Copy [workflow_research.json](configs/workflow_research.json) to ignored `configs/local/my_run.json`. Set exactly one of `dataset` (original HDF5 or five-device NPZ directory) and `prepared_data` (an existing prepared study).
 3. Set a new `run_directory`, review architecture/training settings, and select available hardware. Relative paths resolve from the repository root.
 4. Set every notebook's `CONFIG` to that file. Run Setup and data preparation. Set `RUN_RESEARCH_TRAINING = True` explicitly to launch research training.
@@ -135,6 +154,7 @@ Classification reports overall accuracy and support-weighted precision, recall, 
 
 | Symptom | Action |
 |---|---|
+| Dataset missing or prepared study not found | Run `sers-pipeline dataset-info`, request access, then configure the downloaded file or prepared split directory |
 | Missing framework or wrong notebook kernel | Run `doctor` in the selected interpreter; install the appropriate extra there |
 | TensorFlow cannot access a GPU | Set `translation_device` to `cpu`; PyTorch can still use its own working CUDA runtime |
 | Output already exists | Reopen a completed workflow, or choose a fresh output path for a new experiment |
@@ -147,7 +167,7 @@ Checkpoint weights use content-addressed filenames; **read `metadata.json["weigh
 
 `notebooks/` is the frontend; `configs/` holds profiles; `src/` implements the reusable stages; `docs/` records scientific contracts and operating instructions; `tests/` retains meaningful regressions; `tools/` contains reusable maintainer utilities. Data, checkpoints, environments, and generated outputs are excluded from Git.
 
-The third pass ran only new failure, cancellation, cache-identity, and efficiency checks. Earlier model parity, notebook execution, hardware, dataset, and installed-wheel tests were **not repeated**. [Third-pass review](docs/THIRD_PASS_REVIEW.md) · [Current pass evidence](docs/THIRD_PASS_VERIFICATION.json) · [Historical second-pass evidence](docs/VERIFICATION.json). No full research training or published-score reproduction is claimed. See [CONTRIBUTING.md](CONTRIBUTING.md) for future checks and release preparation.
+Version 0.3.1 adds 13 passing offline dataset-access checks; see [implementation status](docs/IMPLEMENTATION_STATUS.md#dataset-access-update-version-031). The version-0.3.0 review ran only new failure, cancellation, cache-identity, and efficiency checks. Earlier model parity, notebook execution, hardware, dataset, and installed-wheel tests were **not repeated**. [Third-pass review](docs/THIRD_PASS_REVIEW.md) · [Version-0.3.0 evidence](docs/THIRD_PASS_VERIFICATION.json) · [Historical second-pass evidence](docs/VERIFICATION.json). No full research training or published-score reproduction is claimed. See [CONTRIBUTING.md](CONTRIBUTING.md) for future checks and release preparation.
 
 ## Citation and credits
 
@@ -161,4 +181,16 @@ The third pass ran only new failure, cancellation, cache-identity, and efficienc
 }
 ```
 
-Use [CITATION.cff](CITATION.cff), cite the relevant [method papers](docs/REFERENCES.md), and report the software version, configuration, and checkpoint hashes. [NOTICE.md](NOTICE.md) documents implementation lineage and credits. Code is under [MIT](LICENSE); the dataset, weights, and article have separate license scopes.
+Dataset citation:
+
+```bibtex
+@dataset{mahmud2026sersdataset,
+  author = {Mahmud, Sakib},
+  title = {Multi-Instrument SERS Dataset},
+  year = {2026}, version = {1.0.0}, publisher = {Zenodo},
+  doi = {10.5281/zenodo.23372983},
+  url = {https://zenodo.org/records/23372983}
+}
+```
+
+Use [CITATION.cff](CITATION.cff), cite the dataset and the relevant [method papers](docs/REFERENCES.md), and report the software version, configuration, and checkpoint hashes. [NOTICE.md](NOTICE.md) documents implementation lineage and credits. Code is under [MIT](LICENSE); the dataset, weights, and article have separate license scopes.

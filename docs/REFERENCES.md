@@ -6,6 +6,10 @@ Bibliographic metadata was reviewed on 15 October 2026 against the supplied arti
 
 Sakib Mahmud, Faizul Rakib Sayem, Manal Hassan, Yanjun Yang, Muhammad E. H. Chowdhury, Susu M. Zughaier, Faycal Bensaali, and Yiping Zhao. **Deep learning-based cross-device standardization of surface-enhanced Raman spectroscopy for enhanced bacterial recognition.** *Spectrochimica Acta Part A: Molecular and Biomolecular Spectroscopy* **347**, 126931 (2026). [DOI: 10.1016/j.saa.2025.126931](https://doi.org/10.1016/j.saa.2025.126931). Available online 19 September 2025. The author list and 2026 issue citation follow the supplied version of record; external indexes can differ.
 
+## Dataset
+
+Sakib Mahmud. **Multi-Instrument SERS Dataset** (Version 1.0.0). Zenodo (2026). [DOI: 10.5281/zenodo.23372983](https://doi.org/10.5281/zenodo.23372983). Files are restricted; access is available following curator review of a reasonable request. The public record lists CC BY 4.0. See the [data-access guide](DATA.md) for the local workflow after approval.
+
 ## Operational neurons
 
 1. Serkan Kiranyaz, Turker Ince, Alexandros Iosifidis, and Moncef Gabbouj. **Operational neural networks.** *Neural Computing and Applications* **32**, 6645–6668 (2020). [DOI: 10.1007/s00521-020-04780-3](https://doi.org/10.1007/s00521-020-04780-3). Generalized nodal/pooling operators; foundational context.

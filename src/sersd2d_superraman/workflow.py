@@ -9,6 +9,7 @@ import os
 import sys
 from .data import DEVICES, SOURCE_DEVICES, load_batch
 from .data.splits import assert_disjoint
+from .data.access import require_dataset, require_prepared
 from .provenance import (
     array_hash,
     file_hash,
@@ -26,7 +27,7 @@ from . import __version__
 
 def validate_prepared(directory):
     """Check all roles before training, including cross-device acquisition-group leakage."""
-    directory = Path(directory)
+    directory = require_prepared(directory)
     study = read_json(directory / "study.json")
     if study.get("protocol") != "maintained_independent_within_device":
         raise ValueError("Unsupported preparation protocol")
@@ -295,6 +296,7 @@ class Workflow:
                     ["make-synthetic", "--output", dataset, "--per-class", self.config.get("per_class", 5)],
                     [dataset / f"{device}.npz" for device in DEVICES],
                 )
+            dataset = require_dataset(dataset)
             inputs = [dataset / f"{d}.npz" for d in DEVICES] if dataset.is_dir() else [dataset]
             outputs = [self.prepared / "study.json"]
             outputs += [

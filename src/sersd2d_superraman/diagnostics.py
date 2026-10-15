@@ -4,6 +4,7 @@ from importlib.metadata import PackageNotFoundError, version
 import platform
 import sys
 from . import __version__
+from .data.access import dataset_info
 
 
 def environment_report():
@@ -22,5 +23,6 @@ def environment_report():
         "packages": packages,
         "missing_notebook_packages": [k for k, v in packages.items() if v is None],
         "historically_verified_frameworks": {"tensorflow": "2.21.0", "torch": "2.6.0"},
+        "dataset": dataset_info(),
         "scope": "Installed metadata only; GPU availability and binary compatibility are not probed.",
     }

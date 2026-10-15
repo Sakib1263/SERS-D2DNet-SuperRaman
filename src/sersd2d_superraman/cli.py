@@ -11,6 +11,7 @@ from .data.registry import canonical_device
 from .data.splits import independent_split, assert_disjoint
 from .provenance import fresh_directory, file_hash, read_json, write_json, write_npz
 from .devices import tensorflow_device
+from .data.access import dataset_info, require_dataset
 
 
 def synthetic(output, per_class=8, seed=37):
@@ -47,8 +48,8 @@ def synthetic(output, per_class=8, seed=37):
 
 
 def prepare(dataset, output, seed=37, validation_fraction=0.1, test_fraction=0.2):
+    dataset = require_dataset(dataset)
     output = fresh_directory(output)
-    dataset = Path(dataset)
     manifests = {}
     for device in DEVICES:
         path = dataset / f"{device}.npz" if dataset.is_dir() else dataset
@@ -106,6 +107,8 @@ def _run(args):
     ):
         if Path(args.output).exists():
             raise ValueError("Output file already exists; choose a new artifact path")
+    if args.command == "dataset-info":
+        return dataset_info()
     if args.command == "doctor":
         from .diagnostics import environment_report
 
@@ -460,6 +463,7 @@ def parser():
     sub = p.add_subparsers(dest="command", required=True)
     for name in (
         "doctor",
+        "dataset-info",
         "make-synthetic",
         "prepare",
         "inspect",
@@ -490,7 +494,7 @@ def parser():
             "benchmark",
         ):
             s.add_argument("--input", required=True)
-        if name not in ("doctor", "inspect", "audit-model"):
+        if name not in ("doctor", "dataset-info", "inspect", "audit-model"):
             s.add_argument("--output", required=True)
         if name in ("translate", "classify", "explain", "benchmark", "audit-model"):
             s.add_argument("--checkpoint", required=name != "audit-model")
@@ -519,7 +523,11 @@ def parser():
         if name == "make-synthetic":
             s.add_argument("--per-class", type=int, default=8)
         if name == "prepare":
-            s.add_argument("--dataset", required=True)
+            s.add_argument(
+                "--dataset",
+                required=True,
+                help="Local preprocessed HDF5 or five-device NPZ directory; see dataset-info for access",
+            )
             s.add_argument("--validation-fraction", type=float, default=0.1)
             s.add_argument("--test-fraction", type=float, default=0.2)
         if name == "inspect":

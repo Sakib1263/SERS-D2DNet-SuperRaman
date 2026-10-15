@@ -29,7 +29,7 @@ Leave `CONFIG` at `configs/workflow_demo.json` and run the control center. It pr
 
 ## Run research
 
-1. Copy `configs/workflow_research.json` into ignored `configs/local/my_run.json`.
+1. [Request access to the dataset on Zenodo](https://zenodo.org/records/23372983) and download/extract the approved files. Follow the [data-access guide](DATA.md). Copy `configs/workflow_research.json` into ignored `configs/local/my_run.json`.
 2. Set `prepared_data` to an existing prepared study, or replace it with `dataset` pointing to an authorized HDF5 file or canonical five-device NPZ directory.
 3. Select a fresh output directory and the available devices. Review all architecture/training settings against the paper alignment map.
 4. Point every notebook's `CONFIG` to this file. Run Setup and data preparation first.

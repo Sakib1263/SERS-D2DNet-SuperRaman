@@ -1,8 +1,8 @@
 cff-version: 1.2.0
-message: "Cite the associated paper and record this software version and checkpoint hashes."
+message: "Cite the associated paper and dataset, and record the software version and checkpoint hashes."
 title: "SERS-D2DNet and SuperRaman research pipeline"
-version: 0.3.0
-date-released: 2026-10-15
+version: 0.3.1
+date-released: "2026-10-15"
 type: software
 repository-code: https://github.com/Sakib1263/SERS-D2DNet-SuperRaman
 license: MIT
@@ -26,3 +26,16 @@ preferred-citation:
   year: 2026
   start: "126931"
   doi: 10.1016/j.saa.2025.126931
+references:
+  - type: data
+    title: "Multi-Instrument SERS Dataset"
+    authors:
+      - family-names: Mahmud
+        given-names: Sakib
+        orcid: "https://orcid.org/0000-0002-4599-2192"
+    year: 2026
+    version: "1.0.0"
+    doi: "10.5281/zenodo.23372983"
+    url: "https://zenodo.org/records/23372983"
+    publisher:
+      name: Zenodo
